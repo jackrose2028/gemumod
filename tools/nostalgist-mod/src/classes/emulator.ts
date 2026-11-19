@@ -1,0 +1,916 @@
+import { coreInfoMap } from '../constants/core-info.ts'
+import { keyboardCodeMap } from '../constants/keyboard-code-map.ts'
+import { normalizeCheat, resolveCheatTargets } from '../libs/cheats.ts'
+import { getEmscriptenModuleOverrides } from '../libs/emscripten.ts'
+import { importCoreJsAsESM } from '../libs/emulator-utils.ts'
+import {
+  checkIsAborted,
+  delay,
+  installSetImmediatePolyfill,
+  padZero,
+  textEncoder,
+  uninstallSetImmediatePolyfill,
+  updateStyle,
+} from '../libs/utils.ts'
+import { vendors } from '../libs/vendors.ts'
+import type { NostalgistCheatInput, NostalgistCheatTarget } from '../types/nostalgist-options.ts'
+import type { RetroArchCommand } from '../types/retroarch-command.ts'
+import type { RetroArchEmscriptenModule } from '../types/retroarch-emscripten'
+import { EjsInputBridge } from './ejs-input-bridge.ts'
+import { EmulatorFileSystem } from './emulator-file-system.ts'
+import type { EmulatorOptions } from './emulator-options'
+import type { ResolvableFile } from './resolvable-file.ts'
+
+const { ini, path } = vendors
+
+const interactableElements = [
+  globalThis.HTMLAnchorElement,
+  globalThis.HTMLButtonElement,
+  globalThis.HTMLDetailsElement,
+  globalThis.HTMLInputElement,
+  globalThis.HTMLSelectElement,
+  globalThis.HTMLTextAreaElement,
+].filter(Boolean)
+
+function isInteractable(element?: EventTarget | null) {
+  return element && interactableElements.some((clazz) => element instanceof clazz)
+}
+
+const EJS_STATE_PATH = '/nostalgist-mod.state'
+const EJS_SCREENSHOT_PATH = '/screenshot.png'
+
+type GameStatus = 'initial' | 'paused' | 'running' | 'terminated'
+type EmulatorEvent = 'beforeLaunch' | 'onLaunch'
+
+interface EmulatorEmscripten {
+  AL: any
+  Browser: any
+  exit: (code: number) => void
+  JSEvents: any
+  Module: RetroArchEmscriptenModule
+}
+
+export class Emulator {
+  private blobUrlJs: string | undefined
+  private blobUrlWasm: string | undefined
+
+  private cachedKeyboardCodes: Map<string, string> | null = null
+  private cachedRetroarchConfigMtime = 0
+  private canvasInitialSize = { height: 0, width: 0 }
+  private emscripten: EmulatorEmscripten | undefined
+  private readonly eventListeners: Record<EmulatorEvent, ((...args: unknown[]) => unknown)[]> = {
+    beforeLaunch: [],
+    onLaunch: [],
+  }
+  private fileSystem: EmulatorFileSystem | undefined
+  private gameStatus: GameStatus = 'initial'
+  private inputBridge: EjsInputBridge | undefined
+  private readonly globalDOMEventListeners = new Map<EventTarget, Record<string, EventListenerOrEventListenerObject>>()
+
+  private readonly messageQueue: [Uint8Array, number][] = []
+
+  private readonly options: EmulatorOptions
+
+  private get coreFullName() {
+    const { core } = this.options
+    const coreFullName = coreInfoMap[core.name]?.corename || core.name
+    if (!coreFullName) {
+      throw new Error(`invalid core name: ${core.name}`)
+    }
+    return coreFullName
+  }
+
+  private get enabledCheats() {
+    return this.options.cheats.filter(({ enabled }) => enabled)
+  }
+
+  private get fs() {
+    if (!this.fileSystem) {
+      throw new Error('fileSystem is not ready')
+    }
+    return this.fileSystem
+  }
+
+  private get romBaseName() {
+    const {
+      rom: [{ baseName }],
+    } = this.options
+    return baseName
+  }
+
+  private get sramFileDirectory() {
+    return path.join(EmulatorFileSystem.userdataDirectory, 'saves', this.coreFullName)
+  }
+
+  private get sramFilePath() {
+    return path.join(this.sramFileDirectory, `${this.romBaseName}.${this.sramFileType}`)
+  }
+
+  private get sramFileType() {
+    return this.options.sramType
+  }
+
+  private get stateFileDirectory() {
+    return path.join(EmulatorFileSystem.userdataDirectory, 'states', this.coreFullName)
+  }
+
+  private get stateFilePath() {
+    return path.join(this.stateFileDirectory, `${this.romBaseName}.state`)
+  }
+
+  private get stateThumbnailFilePath() {
+    return `${this.stateFilePath}.png`
+  }
+
+  constructor(options: EmulatorOptions) {
+    this.options = options
+  }
+
+  addCheat(cheat: NostalgistCheatInput) {
+    this.options.cheats.push(normalizeCheat(cheat))
+    return this.syncCheats()
+  }
+
+  callCommand(command: string) {
+    const { Module } = this.getEmscripten()
+    Module[command]?.()
+  }
+
+  clearCheats() {
+    return this.setCheats([])
+  }
+
+  disableCheat(target: NostalgistCheatTarget) {
+    return this.setCheatsEnabled(target, false)
+  }
+
+  enableCheat(target: NostalgistCheatTarget) {
+    return this.setCheatsEnabled(target, true)
+  }
+
+  exit(statusCode = 0) {
+    this.inputBridge?.destroy()
+    this.inputBridge = undefined
+    const { exit, JSEvents } = this.getEmscripten()
+    try {
+      exit(statusCode)
+    } catch {}
+    JSEvents.removeAllEventListeners()
+    this.removeGlobalDOMEventListeners()
+    if (this.blobUrlWasm !== undefined) {
+      URL.revokeObjectURL(this.blobUrlWasm)
+      this.blobUrlWasm = undefined
+    }
+    if (this.blobUrlJs !== undefined) {
+      URL.revokeObjectURL(this.blobUrlJs)
+      this.blobUrlJs = undefined
+    }
+    uninstallSetImmediatePolyfill()
+    this.gameStatus = 'terminated'
+  }
+
+  getCheats() {
+    return this.options.cheats.map((cheat) => ({ ...cheat }))
+  }
+
+  getEmscripten() {
+    if (!this.emscripten) {
+      throw new Error('emulator is not ready')
+    }
+    return this.emscripten
+  }
+
+  getOptions() {
+    return this.options
+  }
+
+  getStatus() {
+    return this.gameStatus
+  }
+
+  async launch() {
+    const { element, respondToGlobalEvents, signal, style, waitForInteraction } = this.options
+    updateStyle(element, style)
+
+    // a workaround for avoiding width and height to be deleted by these lines:
+    // https://github.com/emscripten-core/emscripten/blob/5b489fcde78f596d0b3a28f655a8d88a9bfde34a/src/lib/libglfw.js#L1262-L1263
+    const removeProperty = element.style.removeProperty.bind(element.style)
+    element.style.removeProperty = (property: string) => {
+      if (property !== 'width' && property !== 'height') {
+        return removeProperty(property)
+      }
+      return element.style[property]
+    }
+
+    if (!element.isConnected) {
+      document.body.append(element)
+      signal?.addEventListener('abort', () => {
+        element?.remove()
+      })
+    }
+    this.canvasInitialSize = this.getElementSize()
+
+    if (!respondToGlobalEvents) {
+      if (!element.tabIndex || element.tabIndex === -1) {
+        element.tabIndex = 0
+      }
+      const { activeElement } = document
+      element.focus()
+      signal?.addEventListener('abort', () => {
+        if (activeElement instanceof HTMLElement) {
+          activeElement.focus()
+        }
+      })
+    }
+
+    await this.runEventListeners('beforeLaunch')
+
+    if (waitForInteraction) {
+      waitForInteraction({
+        done: async () => {
+          this.runMain()
+          await this.runEventListeners('onLaunch')
+        },
+      })
+    } else {
+      this.runMain()
+      await this.runEventListeners('onLaunch')
+    }
+  }
+
+  async loadState(state: ResolvableFile) {
+    // NostalgistMod: EmulatorJS builds load a state file through load_state(path)
+    const ejs = this.getEjsExports()
+    if (ejs.loadState) {
+      const bytes = new Uint8Array(await state.getArrayBuffer())
+      try {
+        this.getEmscripten().Module.FS.unlink(EJS_STATE_PATH)
+      } catch {}
+      this.getEmscripten().Module.FS.writeFile(EJS_STATE_PATH, bytes)
+      ejs.loadState(EJS_STATE_PATH, 0)
+      return
+    }
+    this.clearStateFile()
+    await this.fs.writeFile(this.stateFilePath, state)
+    await this.fs.waitForFile(this.stateFilePath)
+    this.sendCommand('LOAD_STATE')
+  }
+
+  on(event: EmulatorEvent, callback: (...args: unknown[]) => unknown) {
+    this.eventListeners[event].push(callback)
+    return this
+  }
+
+  pause() {
+    if (this.gameStatus === 'running') {
+      this.sendCommand('PAUSE_TOGGLE')
+    }
+    this.gameStatus = 'paused'
+  }
+
+  async press(button: string, player = 1, time = 100) {
+    if (this.inputBridge?.setButton(button, player, true)) {
+      await delay(time)
+      this.inputBridge.setButton(button, player, false)
+      return
+    }
+    const code = this.getKeyboardCode(button, player)
+    if (code) {
+      await this.keyboardPress(code, time)
+    }
+  }
+
+  pressDown(button: string, player = 1) {
+    if (this.inputBridge?.setButton(button, player, true)) return
+    const code = this.getKeyboardCode(button, player)
+    if (code) {
+      this.keyboardDown(code)
+    }
+  }
+
+  pressUp(button: string, player = 1) {
+    if (this.inputBridge?.setButton(button, player, false)) return
+    const code = this.getKeyboardCode(button, player)
+    if (code) {
+      this.keyboardUp(code)
+    }
+  }
+
+  resize({ height, width }: { height: number; width: number }) {
+    const { Module } = this.getEmscripten()
+    if (typeof width === 'number' && typeof height === 'number') {
+      try {
+        Module.setCanvasSize(width, height)
+      } catch (error) {
+        if (error instanceof DOMException) {
+          Module.canvas.setAttribute('width', width.toString())
+          Module.canvas.setAttribute('height', height.toString())
+        } else {
+          throw error
+        }
+      }
+    }
+  }
+
+  restart() {
+    this.sendCommand('RESET')
+    this.resume()
+  }
+
+  resume() {
+    if (this.gameStatus === 'paused') {
+      this.sendCommand('PAUSE_TOGGLE')
+    }
+    this.gameStatus = 'running'
+  }
+
+  async saveSRAM() {
+    this.fs.unlink(this.sramFilePath)
+    this.callCommand('_cmd_savefiles')
+    const buffer = await this.fs.waitForFile(this.sramFilePath)
+    const blob = new Blob([buffer], { type: 'application/octet-stream' })
+    return blob
+  }
+
+  async saveState() {
+    // NostalgistMod: EmulatorJS builds report the state buffer in memory as "size|pointer|ok"
+    const ejs = this.getEjsExports()
+    if (ejs.saveStateInfo) {
+      const [size, pointer, ok] = ejs.saveStateInfo().split('|')
+      if (ok !== '1') {
+        throw new Error(`failed to save state: ${size}`)
+      }
+      const { Module } = this.getEmscripten()
+      const start = Number.parseInt(pointer, 10)
+      const copy = (Module as any).HEAPU8.slice(start, start + Number.parseInt(size, 10))
+      const state = new Blob([copy], { type: 'application/octet-stream' })
+      const { multiDiscIndex } = this.options
+      return { state, thumbnail: undefined, ...(multiDiscIndex !== undefined && { multiDiscIndex }) }
+    }
+    this.clearStateFile()
+    this.sendCommand('SAVE_STATE')
+    const savestateThumbnailEnable = this.options.retroarchConfig.savestate_thumbnail_enable
+    let stateBuffer: ArrayBufferView<ArrayBuffer>
+    let stateThumbnailBuffer: ArrayBufferView<ArrayBuffer> | undefined
+    if (savestateThumbnailEnable) {
+      ;[stateBuffer, stateThumbnailBuffer] = await Promise.all([
+        this.fs.waitForFile(this.stateFilePath),
+        this.fs.waitForFile(this.stateThumbnailFilePath),
+      ])
+    } else {
+      stateBuffer = await this.fs.waitForFile(this.stateFilePath)
+    }
+    this.clearStateFile()
+
+    const state = new Blob([stateBuffer], { type: 'application/octet-stream' })
+    const thumbnail = stateThumbnailBuffer ? new Blob([stateThumbnailBuffer], { type: 'image/png' }) : undefined
+    const { multiDiscIndex } = this.options
+    return { state, thumbnail, ...(multiDiscIndex !== undefined && { multiDiscIndex }) }
+  }
+
+  async screenshot() {
+    // NostalgistMod: EmulatorJS builds always write the screenshot to /screenshot.png
+    if (this.getEjsExports().isEjsBuild) {
+      try {
+        this.fs.unlink(EJS_SCREENSHOT_PATH)
+      } catch {}
+      this.callCommand('_cmd_take_screenshot')
+      const buffer = await this.fs.waitForFile(EJS_SCREENSHOT_PATH)
+      this.fs.unlink(EJS_SCREENSHOT_PATH)
+      return new Blob([buffer], { type: 'image/png' })
+    }
+    this.sendCommand('SCREENSHOT')
+    const screenshotFileName = this.guessScreenshotFileName()
+    const screenshotPath = path.join(EmulatorFileSystem.screenshotsDirectory, screenshotFileName)
+    const buffer = await this.fs.waitForFile(screenshotPath)
+    this.fs.unlink(screenshotPath)
+    return new Blob([buffer], { type: 'image/png' })
+  }
+
+  sendCommand(msg: RetroArchCommand) {
+    const exportedCommand: Partial<Record<RetroArchCommand, string>> = {
+      LOAD_STATE: '_cmd_load_state',
+      PAUSE_TOGGLE: '_cmd_toggle_pause',
+      RESET: '_cmd_reset',
+      SAVE_STATE: '_cmd_save_state',
+      SCREENSHOT: '_cmd_take_screenshot',
+    }
+    const { Module } = this.getEmscripten()
+    if (exportedCommand[msg] && exportedCommand[msg] in Module) {
+      this.callCommand(exportedCommand[msg])
+    } else if ('EmscriptenSendCommand' in Module) {
+      Module.EmscriptenSendCommand?.(msg)
+    } else {
+      const bytes = textEncoder.encode(`${msg}\n`)
+      this.messageQueue.push([bytes, 0])
+    }
+  }
+
+  setCheats(cheats: NostalgistCheatInput[]) {
+    this.options.cheats = cheats.map((cheat) => normalizeCheat(cheat))
+    return this.syncCheats()
+  }
+
+  async setup() {
+    await this.setupEmscripten()
+    await this.setupFileSystem()
+  }
+
+  async switchDisc(index: number) {
+    const { multiDiscRom } = this.options
+
+    if (!multiDiscRom) {
+      return
+    }
+
+    let delta = this.options.multiDiscIndex ? index - this.options.multiDiscIndex : 0
+    if (delta === 0) {
+      return
+    }
+
+    const requestedRom = multiDiscRom.get(index)
+    if (requestedRom) {
+      const requestedResolvableFile = await this.options.createResolvableFile(requestedRom)
+
+      if (!requestedResolvableFile) {
+        return
+      }
+
+      await this.fs.writeFile(
+        path.join(EmulatorFileSystem.contentDirectory, requestedResolvableFile.name),
+        requestedResolvableFile,
+      )
+
+      multiDiscRom.delete(index)
+    }
+
+    this.sendCommand('DISK_EJECT_TOGGLE')
+
+    while (delta !== 0) {
+      if (delta > 0) {
+        this.sendCommand('DISK_NEXT')
+        delta -= 1
+      } else {
+        this.sendCommand('DISK_PREV')
+        delta += 1
+      }
+    }
+
+    this.sendCommand('DISK_EJECT_TOGGLE')
+    this.options.multiDiscIndex = index
+  }
+
+  private ejsExports: { isEjsBuild: boolean; loadState?: (path: string, slot: number) => number; saveStateInfo?: () => string } | undefined
+
+  /** Functions only EmulatorJS core builds export; empty for regular RetroArch builds. */
+  private getEjsExports() {
+    if (!this.ejsExports) {
+      const Module = this.getEmscripten().Module as any
+      const cwrap = Module.cwrap
+      const isEjsBuild = typeof Module._simulate_input === 'function'
+      this.ejsExports = { isEjsBuild }
+      if (isEjsBuild && typeof cwrap === 'function') {
+        if (typeof Module._save_state_info === 'function') this.ejsExports.saveStateInfo = cwrap('save_state_info', 'string', [])
+        if (typeof Module._load_state === 'function') this.ejsExports.loadState = cwrap('load_state', 'number', ['string', 'number'])
+      }
+    }
+    return this.ejsExports
+  }
+
+  private clearStateFile() {
+    try {
+      this.fs.unlink(this.stateFilePath)
+      this.fs.unlink(this.stateThumbnailFilePath)
+    } catch {}
+  }
+
+  private fireKeyboardEvent(type: 'keydown' | 'keyup', code: string) {
+    const { JSEvents } = this.getEmscripten()
+    for (const { eventListenerFunc, eventTypeString } of JSEvents.eventHandlers) {
+      if (eventTypeString === type) {
+        try {
+          eventListenerFunc({ code, target: this.options.element })
+        } catch {}
+      }
+    }
+  }
+
+  private getCurrentRetroarchConfig() {
+    const configContent = this.fs.readFile(EmulatorFileSystem.configPath)
+    return ini.parse(configContent)
+  }
+
+  private getElementSize() {
+    const { element, size } = this.options
+    return !size || size === 'auto' ? { height: element.offsetHeight, width: element.offsetWidth } : size
+  }
+
+  private getKeyboardCode(button: string, player = 1) {
+    // Check config file stats to see if it changed
+    const stats = this.fs.stat(EmulatorFileSystem.configPath)
+    const currentMtime = stats ? stats.mtime.getTime() : 0
+
+    // Reload cache if mtime changed or cache doesn't exist
+    if (!this.cachedKeyboardCodes || currentMtime > this.cachedRetroarchConfigMtime) {
+      const config = this.getCurrentRetroarchConfig()
+      this.cachedKeyboardCodes = new Map()
+      this.cachedRetroarchConfigMtime = currentMtime
+
+      for (const configKey in config) {
+        if (configKey.startsWith('input_player')) {
+          this.cachedKeyboardCodes.set(configKey, config[configKey])
+        }
+      }
+    }
+
+    const configName = `input_player${player}_${button}`
+    const key = this.cachedKeyboardCodes.get(configName)
+    if (!key || key === 'nul') {
+      return
+    }
+    const { length } = key
+    // single letters
+    if (length === 1) {
+      return `Key${key.toUpperCase()}`
+    }
+    // f1, f2, f3...
+    if (key.startsWith('f') && (length === 2 || length === 3)) {
+      return key.toUpperCase()
+    }
+    // num1, num2, num3...
+    if (length === 4 && key.startsWith('num')) {
+      return `Numpad${key.at(-1)}`
+    }
+    if (length === 7 && key.startsWith('keypad')) {
+      return `Digit${key.at(-1)}`
+    }
+    return keyboardCodeMap[key] || ''
+  }
+
+  private guessScreenshotFileName() {
+    const date = new Date()
+    const year = date.getFullYear() % 1000
+    const month = padZero(date.getMonth() + 1)
+    const day = padZero(date.getDate())
+    const hour = padZero(date.getHours())
+    const minute = padZero(date.getMinutes())
+    const second = padZero(date.getSeconds())
+    const dateString = `${year}${month}${day}-${hour}${minute}${second}`
+    const baseName = this.romBaseName
+    return `${baseName}-${dateString}.png`
+  }
+
+  private keyboardDown(code: string) {
+    this.fireKeyboardEvent('keydown', code)
+  }
+
+  private async keyboardPress(code: string, time = 100) {
+    this.keyboardDown(code)
+    await delay(time)
+    this.keyboardUp(code)
+  }
+
+  private keyboardUp(code: string) {
+    this.fireKeyboardEvent('keyup', code)
+  }
+
+  private postRun() {
+    this.resize(this.canvasInitialSize)
+
+    // tell retroarch that controllers are connected
+    for (const gamepad of navigator.getGamepads?.() ?? []) {
+      if (gamepad) {
+        globalThis.dispatchEvent(new GamepadEvent('gamepadconnected', { gamepad }))
+      }
+    }
+
+    this.updateKeyboardEventHandlers()
+
+    // NostalgistMod: EmulatorJS builds take input through simulate_input instead of RetroArch's keyboard driver
+    const { Module } = this.getEmscripten()
+    const simulate = (Module as any)._simulate_input
+    if (typeof simulate === 'function' && !this.inputBridge) {
+      const { element, respondToGlobalEvents } = this.options
+      this.inputBridge = new EjsInputBridge(
+        (player, index, value) => simulate(player, index, value),
+        (button, player) => this.getKeyboardCode(button, player),
+        respondToGlobalEvents ? document : element,
+        element,
+        respondToGlobalEvents,
+      )
+    }
+
+    // cheats can only reach the core once it's running
+    if (this.enabledCheats.length > 0) {
+      this.syncCheats()
+    }
+  }
+
+  private recordGlobalDOMEventListeners() {
+    for (const eventTarget of [globalThis, document]) {
+      eventTarget.addEventListener = (...args: [string, any]) => {
+        const [type, listener] = args
+        const value = this.globalDOMEventListeners.get(eventTarget) || {}
+        value[type] = listener
+        this.globalDOMEventListeners.set(eventTarget, value)
+        return EventTarget.prototype.addEventListener.apply(eventTarget, args)
+      }
+    }
+  }
+
+  private removeGlobalDOMEventListeners() {
+    for (const [eventTarget, eventListeners] of this.globalDOMEventListeners) {
+      for (const eventType in eventListeners) {
+        const listener = eventListeners[eventType]
+        eventTarget.removeEventListener(eventType, listener)
+      }
+    }
+  }
+
+  private async runEventListeners(event: EmulatorEvent) {
+    const { [event]: eventListeners } = this.eventListeners
+    for (const eventListener of eventListeners) {
+      await eventListener()
+    }
+  }
+
+  private runMain() {
+    checkIsAborted(this.options.signal)
+    const { Module } = this.getEmscripten()
+    const raArgs = Module.arguments || []
+    const { rom, signal } = this.options
+    if (!Module.arguments && rom.length > 0) {
+      const [{ name }] = rom
+      raArgs.push(path.join(EmulatorFileSystem.contentDirectory, name))
+    }
+
+    raArgs.push('-c', EmulatorFileSystem.configPath)
+
+    installSetImmediatePolyfill()
+
+    this.recordGlobalDOMEventListeners()
+
+    if (this.options.multiDisc) {
+      this.options.multiDiscIndex = 1
+    }
+
+    Module.callMain(raArgs)
+    for (const [eventTarget] of this.globalDOMEventListeners) {
+      // @ts-expect-error the `addEventListener` here is the modified one attached in `recordGlobalDOMEventListeners`
+      delete eventTarget.addEventListener
+    }
+
+    signal?.addEventListener('abort', () => {
+      this.exit()
+    })
+    this.gameStatus = 'running'
+    this.postRun()
+  }
+
+  private setCheatsEnabled(target: NostalgistCheatTarget, enabled: boolean) {
+    const indexes = resolveCheatTargets(this.options.cheats, target)
+    if (indexes.length === 0) {
+      return false
+    }
+    for (const index of indexes) {
+      this.options.cheats[index].enabled = enabled
+    }
+    return this.syncCheats()
+  }
+
+  private async setupEmscripten() {
+    const { core, element, emscriptenModule, onLog } = this.options
+    const { js, name, wasm } = core
+    const { locateFile } = emscriptenModule
+    const blobJs = (() => {
+      try {
+        return js.getBlob()
+      } catch {}
+    })()
+    const blobWasm = (() => {
+      try {
+        return wasm.getBlob()
+      } catch {}
+    })()
+    if (blobJs !== undefined && this.blobUrlJs === undefined) {
+      this.blobUrlJs = URL.createObjectURL(blobJs)
+    }
+    if (blobWasm !== undefined && this.blobUrlWasm === undefined) {
+      this.blobUrlWasm = URL.createObjectURL(blobWasm)
+    }
+    const moduleOptions = {
+      canvas: element,
+      // NostalgistMod: EmulatorJS core builds bind keyboard events to Module.parent ("!parent")
+      parent: element.parentElement || document.body,
+      preRun: [],
+      wasmBinary: await wasm.getArrayBuffer(),
+      ...(blobJs === undefined ? {} : { mainScriptUrlOrBlob: blobJs }),
+      ...emscriptenModule,
+
+      locateFile: (url: string, scriptDirectory: string) => {
+        if (this.blobUrlJs !== undefined && url === `${name}_libretro.js`) {
+          return this.blobUrlJs
+        }
+        if (this.blobUrlWasm !== undefined && url === `${name}_libretro.wasm`) {
+          return this.blobUrlWasm
+        }
+        if (typeof locateFile === 'function') {
+          return locateFile(url, scriptDirectory)
+        }
+        return scriptDirectory + url
+      },
+    }
+    const initialModule = getEmscriptenModuleOverrides(moduleOptions, { onLog })
+    initialModule.preRun?.push(() => {
+      if (typeof initialModule.FS.init === 'function') {
+        initialModule.FS.init(() => this.stdin())
+      }
+    })
+
+    const { getEmscripten } = await importCoreJsAsESM(core)
+    checkIsAborted(this.options.signal)
+    const emscripten = await getEmscripten({ Module: initialModule })
+    checkIsAborted(this.options.signal)
+    const Module = (emscripten as EmulatorEmscripten).Module ?? emscripten
+    this.emscripten = { ...(emscripten as EmulatorEmscripten), Module }
+    await Module.monitorRunDependencies()
+    checkIsAborted(this.options.signal)
+  }
+
+  private async setupFileSystem() {
+    const { Module } = this.getEmscripten()
+    const { bios, rom, signal, sram, state } = this.options
+
+    for (const { name } of bios) {
+      if (!name) {
+        throw new Error('file name is required for bios')
+      }
+    }
+
+    const fileSystem = await EmulatorFileSystem.create({ emscriptenModule: Module, signal })
+    this.fileSystem = fileSystem
+    if (state) {
+      this.fs.mkdirTree(this.stateFileDirectory)
+    }
+    if (sram) {
+      this.fs.mkdirTree(this.sramFileDirectory)
+    }
+
+    const filePromises: Promise<void>[] = [
+      ...rom.map((file) => this.fs.writeFile(path.join(EmulatorFileSystem.contentDirectory, file.name), file)),
+      ...bios.map((file) => this.fs.writeFile(path.join(EmulatorFileSystem.systemDirectory, file.name), file)),
+    ]
+    if (state) {
+      filePromises.push(this.fs.writeFile(`${this.stateFilePath}.auto`, state))
+    }
+    if (sram) {
+      filePromises.push(this.fs.writeFile(this.sramFilePath, sram))
+    }
+    await Promise.all(filePromises)
+    checkIsAborted(signal)
+
+    await this.setupRaConfigFiles()
+    checkIsAborted(this.options.signal)
+  }
+
+  private async setupRaConfigFiles() {
+    await this.fs.writeIni(EmulatorFileSystem.configPath, this.options.retroarchConfig)
+    await this.fs.writeIni(EmulatorFileSystem.coreConfigPath, this.options.retroarchCoreConfig)
+    await this.setupRaShaderFiles()
+  }
+
+  private async setupRaShaderFiles() {
+    const { shader } = this.options
+    if (shader.length === 0) {
+      return
+    }
+    const glslpFiles = shader.filter((file) => file.name.endsWith('.glslp'))
+    if (glslpFiles.length === 0) {
+      return
+    }
+
+    for (const { name } of shader) {
+      if (!name) {
+        throw new Error('file name is required for shader')
+      }
+    }
+
+    const globalGlslpContent = glslpFiles
+      .map((file) => `#reference "${path.join(EmulatorFileSystem.shaderDirectory, file.name)}"`)
+      .join('\n')
+
+    await this.fs.writeFile(path.join(EmulatorFileSystem.configDirectory, 'global.glslp'), globalGlslpContent)
+
+    await Promise.all(
+      shader.map(async (resolvable) => {
+        const directory =
+          resolvable.extension === '.glslp'
+            ? EmulatorFileSystem.shaderDirectory
+            : path.join(EmulatorFileSystem.shaderDirectory, 'shaders')
+        await this.fs.writeFile(path.join(directory, resolvable.name), resolvable)
+      }),
+    )
+  }
+
+  // copied from https://github.com/libretro/RetroArch/pull/15017
+  private stdin() {
+    const { messageQueue } = this
+    // Return ASCII code of character, or null if no input
+    while (messageQueue.length > 0) {
+      const msg = messageQueue[0][0]
+      const index = messageQueue[0][1]
+      if (index >= msg.length) {
+        messageQueue.shift()
+      } else {
+        messageQueue[0][1] = index + 1
+        // assumption: msg is a uint8array
+        return msg[index]
+      }
+    }
+    return null
+  }
+
+  /**
+   * Rebuilds RetroArch's cheat list so that it contains exactly the enabled cheats.
+   * Rebuilding, instead of toggling individual cheats, keeps `this.options.cheats` the only source of truth,
+   * and avoids `cmd_cheat_toggle_index`, which flips a cheat's state rather than setting it.
+   */
+  private syncCheats() {
+    const { Module } = this.getEmscripten()
+    // cores built before RetroArch v1.21.0 do not expose the cheat functions at all
+    if (!('_cmd_cheat_realloc' in Module)) {
+      return false
+    }
+    // RetroArch is not ready to receive cheats until its main loop runs, and applying them any earlier
+    // reaches a core that has not been initialized yet. `postRun` applies the stored list at that point.
+    if (this.gameStatus === 'initial') {
+      return true
+    }
+    const {
+      _cmd_cheat_apply_cheats: applyCheats,
+      _cmd_cheat_realloc: realloc,
+      _cmd_cheat_set_code: setCode,
+      _free: free,
+    } = Module
+    const { enabledCheats } = this
+
+    // shrinking keeps the remaining slots, so everything is released first to avoid leaving a stale cheat behind
+    realloc(0)
+    // `cmd_cheat_apply_cheats` returns early while the list is empty, so a slot is needed for it to reset the core
+    realloc(Math.max(enabledCheats.length, 1))
+
+    for (const [index, { code }] of enabledCheats.entries()) {
+      const pointer = Module.stringToNewUTF8(code)
+      // the code is copied by RetroArch, so the pointer can be released right away
+      setCode(index, pointer)
+      free(pointer)
+    }
+
+    applyCheats()
+
+    if (enabledCheats.length === 0) {
+      realloc(0)
+    }
+
+    return true
+  }
+
+  private updateKeyboardEventHandlers() {
+    const { JSEvents } = this.getEmscripten()
+    const { element, respondToGlobalEvents } = this.options
+    if (!respondToGlobalEvents) {
+      if (!element.getAttribute('tabindex')) {
+        element.tabIndex = -1
+      }
+      element.focus()
+      element.addEventListener('click', () => {
+        element.focus()
+      })
+    }
+
+    // Emscripten module may register keyboard events to document or canvas.
+    // Versions before 1.16.0 will use document while newer versions will use canvas.
+    // Let's modify the default event liseners as needed
+    const keyboardEvents = new Set(['keydown', 'keypress', 'keyup'])
+    const globalKeyboardEventHandlers = JSEvents.eventHandlers.filter(
+      ({ eventTypeString, target }: { eventTypeString: string; target: Document | Element }) =>
+        keyboardEvents.has(eventTypeString) && (target === document || target === element),
+    )
+    for (const globalKeyboardEventHandler of globalKeyboardEventHandlers) {
+      const { eventTypeString, handlerFunc, target } = globalKeyboardEventHandler
+      JSEvents.registerOrRemoveHandler({ eventTypeString, target })
+      JSEvents.registerOrRemoveHandler({
+        ...globalKeyboardEventHandler,
+        handlerFunc: (...args: [KeyboardEvent]) => {
+          const [event] = args
+          const target = event?.target
+          const isValidEmulatorInput = respondToGlobalEvents ? !isInteractable(target) : target === element
+          if (isValidEmulatorInput) {
+            handlerFunc(...args)
+          }
+        },
+        target: respondToGlobalEvents ? document : element,
+      })
+    }
+  }
+}
