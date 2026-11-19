@@ -1,0 +1,960 @@
+{
+ "files": {
+  "81-legacy-wasm.7z": 885589,
+  "81-thread-legacy-wasm.7z": 943242,
+  "81-thread-wasm.7z": 944107,
+  "81-wasm.7z": 885523,
+  "a5200-legacy-wasm.7z": 880582,
+  "a5200-thread-legacy-wasm.7z": 938512,
+  "a5200-thread-wasm.7z": 939229,
+  "a5200-wasm.7z": 881560,
+  "beetle_vb-legacy-wasm.7z": 857641,
+  "beetle_vb-thread-legacy-wasm.7z": 915373,
+  "beetle_vb-thread-wasm.7z": 916317,
+  "beetle_vb-wasm.7z": 858313,
+  "cap32-legacy-wasm.7z": 1018339,
+  "cap32-thread-legacy-wasm.7z": 1078312,
+  "cap32-thread-wasm.7z": 1079313,
+  "cap32-wasm.7z": 1018926,
+  "crocods-legacy-wasm.7z": 973490,
+  "crocods-thread-legacy-wasm.7z": 1030514,
+  "crocods-thread-wasm.7z": 1031644,
+  "crocods-wasm.7z": 973096,
+  "desmume-legacy-wasm.7z": 1171393,
+  "desmume-thread-legacy-wasm.7z": 1239882,
+  "desmume-thread-wasm.7z": 1241011,
+  "desmume-wasm.7z": 1172604,
+  "desmume2015-legacy-wasm.7z": 1042695,
+  "desmume2015-thread-legacy-wasm.7z": 1102809,
+  "desmume2015-thread-wasm.7z": 1103270,
+  "desmume2015-wasm.7z": 1043573,
+  "dosbox_pure-thread-legacy-wasm.7z": 1792195,
+  "dosbox_pure-thread-wasm.7z": 1793257,
+  "fbalpha2012_cps1-legacy-wasm.7z": 1029996,
+  "fbalpha2012_cps1-thread-legacy-wasm.7z": 1099750,
+  "fbalpha2012_cps1-thread-wasm.7z": 1100646,
+  "fbalpha2012_cps1-wasm.7z": 1031240,
+  "fbalpha2012_cps2-legacy-wasm.7z": 992568,
+  "fbalpha2012_cps2-thread-legacy-wasm.7z": 1058339,
+  "fbalpha2012_cps2-thread-wasm.7z": 1057829,
+  "fbalpha2012_cps2-wasm.7z": 992866,
+  "fbneo-legacy-wasm.7z": 8272960,
+  "fbneo-thread-legacy-wasm.7z": 8183085,
+  "fbneo-thread-wasm.7z": 8182154,
+  "fbneo-wasm.7z": 8273551,
+  "fceumm-legacy-wasm.7z": 1053006,
+  "fceumm-thread-legacy-wasm.7z": 1111540,
+  "fceumm-thread-wasm.7z": 1112047,
+  "fceumm-wasm.7z": 1054015,
+  "fuse-legacy-wasm.7z": 1218410,
+  "fuse-thread-legacy-wasm.7z": 1276421,
+  "fuse-thread-wasm.7z": 1276651,
+  "fuse-wasm.7z": 1218229,
+  "gambatte-legacy-wasm.7z": 967022,
+  "gambatte-thread-legacy-wasm.7z": 1025361,
+  "gambatte-thread-wasm.7z": 1025721,
+  "gambatte-wasm.7z": 967156,
+  "gearcoleco-legacy-wasm.7z": 891769,
+  "gearcoleco-thread-legacy-wasm.7z": 950205,
+  "gearcoleco-thread-wasm.7z": 950812,
+  "gearcoleco-wasm.7z": 891907,
+  "genesis_plus_gx-legacy-wasm.7z": 1204803,
+  "genesis_plus_gx-thread-legacy-wasm.7z": 1263738,
+  "genesis_plus_gx-thread-wasm.7z": 1262667,
+  "genesis_plus_gx-wasm.7z": 1203661,
+  "handy-legacy-wasm.7z": 862944,
+  "handy-thread-legacy-wasm.7z": 919742,
+  "handy-thread-wasm.7z": 920881,
+  "handy-wasm.7z": 862304,
+  "mame2003-legacy-wasm.7z": 5030690,
+  "mame2003-thread-legacy-wasm.7z": 4954461,
+  "mame2003-thread-wasm.7z": 4955024,
+  "mame2003-wasm.7z": 5031434,
+  "mame2003_plus-legacy-wasm.7z": 5388568,
+  "mame2003_plus-thread-legacy-wasm.7z": 5302802,
+  "mame2003_plus-thread-wasm.7z": 5300486,
+  "mame2003_plus-wasm.7z": 5391355,
+  "mednafen_ngp-legacy-wasm.7z": 872066,
+  "mednafen_ngp-thread-legacy-wasm.7z": 930268,
+  "mednafen_ngp-thread-wasm.7z": 932033,
+  "mednafen_ngp-wasm.7z": 871904,
+  "mednafen_pce-legacy-wasm.7z": 995095,
+  "mednafen_pce-thread-legacy-wasm.7z": 1057736,
+  "mednafen_pce-thread-wasm.7z": 1058409,
+  "mednafen_pce-wasm.7z": 994844,
+  "mednafen_pcfx-legacy-wasm.7z": 951926,
+  "mednafen_pcfx-thread-legacy-wasm.7z": 1013377,
+  "mednafen_pcfx-thread-wasm.7z": 1015112,
+  "mednafen_pcfx-wasm.7z": 953008,
+  "mednafen_psx_hw-legacy-wasm.7z": 1205923,
+  "mednafen_psx_hw-thread-legacy-wasm.7z": 1273583,
+  "mednafen_psx_hw-thread-wasm.7z": 1273844,
+  "mednafen_psx_hw-wasm.7z": 1205465,
+  "mednafen_wswan-legacy-wasm.7z": 879089,
+  "mednafen_wswan-thread-legacy-wasm.7z": 936295,
+  "mednafen_wswan-thread-wasm.7z": 937816,
+  "mednafen_wswan-wasm.7z": 879301,
+  "melonds-legacy-wasm.7z": 1193773,
+  "melonds-thread-legacy-wasm.7z": 1256279,
+  "melonds-thread-wasm.7z": 1255844,
+  "melonds-wasm.7z": 1194723,
+  "mgba-legacy-wasm.7z": 1054993,
+  "mgba-thread-legacy-wasm.7z": 1115276,
+  "mgba-thread-wasm.7z": 1116559,
+  "mgba-wasm.7z": 1055616,
+  "mupen64plus_next-legacy-wasm.7z": 1451870,
+  "mupen64plus_next-thread-legacy-wasm.7z": 1527835,
+  "mupen64plus_next-thread-wasm.7z": 1528438,
+  "mupen64plus_next-wasm.7z": 1451795,
+  "nestopia-legacy-wasm.7z": 1218931,
+  "nestopia-thread-legacy-wasm.7z": 1284150,
+  "nestopia-thread-wasm.7z": 1285028,
+  "nestopia-wasm.7z": 1219547,
+  "opera-legacy-wasm.7z": 853889,
+  "opera-thread-legacy-wasm.7z": 912206,
+  "opera-thread-wasm.7z": 912782,
+  "opera-wasm.7z": 854147,
+  "parallel_n64-legacy-wasm.7z": 1027660,
+  "parallel_n64-thread-legacy-wasm.7z": 1086216,
+  "parallel_n64-thread-wasm.7z": 1087994,
+  "parallel_n64-wasm.7z": 1028134,
+  "pcsx_rearmed-legacy-wasm.7z": 1038636,
+  "pcsx_rearmed-thread-legacy-wasm.7z": 1100329,
+  "pcsx_rearmed-thread-wasm.7z": 1100889,
+  "pcsx_rearmed-wasm.7z": 1039627,
+  "picodrive-legacy-wasm.7z": 1035609,
+  "picodrive-thread-legacy-wasm.7z": 1094551,
+  "picodrive-thread-wasm.7z": 1095698,
+  "picodrive-wasm.7z": 1034483,
+  "ppsspp-thread-wasm.7z": 4581537,
+  "prboom-legacy-wasm.7z": 1092696,
+  "prboom-thread-legacy-wasm.7z": 1144296,
+  "prboom-thread-wasm.7z": 1143885,
+  "prboom-wasm.7z": 1091036,
+  "prosystem-legacy-wasm.7z": 852780,
+  "prosystem-thread-legacy-wasm.7z": 909965,
+  "prosystem-thread-wasm.7z": 911510,
+  "prosystem-wasm.7z": 852864,
+  "puae-legacy-wasm.7z": 4138844,
+  "puae-thread-legacy-wasm.7z": 4171684,
+  "puae-thread-wasm.7z": 4181684,
+  "puae-wasm.7z": 4140232,
+  "same_cdi-legacy-wasm.7z": 3485046,
+  "same_cdi-thread-legacy-wasm.7z": 3599996,
+  "same_cdi-thread-wasm.7z": 3602526,
+  "same_cdi-wasm.7z": 3483095,
+  "smsplus-legacy-wasm.7z": 855316,
+  "smsplus-thread-legacy-wasm.7z": 912588,
+  "smsplus-thread-wasm.7z": 912580,
+  "smsplus-wasm.7z": 855876,
+  "snes9x-legacy-wasm.7z": 1092437,
+  "snes9x-thread-legacy-wasm.7z": 1154882,
+  "snes9x-thread-wasm.7z": 1156908,
+  "snes9x-wasm.7z": 1093765,
+  "stella2014-legacy-wasm.7z": 1051741,
+  "stella2014-thread-legacy-wasm.7z": 1111224,
+  "stella2014-thread-wasm.7z": 1112143,
+  "stella2014-wasm.7z": 1051659,
+  "vice_x128-legacy-wasm.7z": 1596799,
+  "vice_x128-thread-legacy-wasm.7z": 1662751,
+  "vice_x128-thread-wasm.7z": 1663898,
+  "vice_x128-wasm.7z": 1595414,
+  "vice_x64-legacy-wasm.7z": 1528994,
+  "vice_x64-thread-legacy-wasm.7z": 1595355,
+  "vice_x64-thread-wasm.7z": 1597809,
+  "vice_x64-wasm.7z": 1528680,
+  "vice_x64sc-legacy-wasm.7z": 1523390,
+  "vice_x64sc-thread-legacy-wasm.7z": 1590381,
+  "vice_x64sc-thread-wasm.7z": 1592272,
+  "vice_x64sc-wasm.7z": 1523457,
+  "vice_xpet-legacy-wasm.7z": 1368450,
+  "vice_xpet-thread-legacy-wasm.7z": 1432615,
+  "vice_xpet-thread-wasm.7z": 1433425,
+  "vice_xpet-wasm.7z": 1368677,
+  "vice_xplus4-legacy-wasm.7z": 1413262,
+  "vice_xplus4-thread-legacy-wasm.7z": 1479112,
+  "vice_xplus4-thread-wasm.7z": 1479744,
+  "vice_xplus4-wasm.7z": 1413246,
+  "vice_xvic-legacy-wasm.7z": 1396460,
+  "vice_xvic-thread-legacy-wasm.7z": 1463881,
+  "vice_xvic-thread-wasm.7z": 1464811,
+  "vice_xvic-wasm.7z": 1396793,
+  "virtualjaguar-legacy-wasm.7z": 943525,
+  "virtualjaguar-thread-legacy-wasm.7z": 999550,
+  "virtualjaguar-thread-wasm.7z": 1000002,
+  "virtualjaguar-wasm.7z": 942590,
+  "yabause-legacy-wasm.7z": 990428,
+  "yabause-thread-legacy-wasm.7z": 1050475,
+  "yabause-thread-wasm.7z": 1051299,
+  "yabause-wasm.7z": 991166
+ },
+ "cores": {
+  "81": {
+   "name": "81",
+   "extensions": [
+    "p",
+    "tzx",
+    "t81"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "a5200": {
+   "name": "a5200",
+   "extensions": [
+    "a52",
+    "bin"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "beetle_vb": {
+   "name": "beetle_vb",
+   "extensions": [
+    "vb",
+    "vboy",
+    "bin"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "cap32": {
+   "name": "cap32",
+   "extensions": [
+    "dsk",
+    "sna",
+    "tap",
+    "cdt",
+    "voc",
+    "m3u",
+    "cpr",
+    "zip"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "crocods": {
+   "name": "crocods",
+   "extensions": [
+    "dsk",
+    "sna",
+    "kcr"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "desmume": {
+   "name": "desmume",
+   "extensions": [
+    "nds",
+    "bin"
+   ],
+   "defaultWebGL2": true,
+   "supportsMouse": true
+  },
+  "desmume2015": {
+   "name": "desmume2015",
+   "extensions": [
+    "nds",
+    "bin"
+   ],
+   "defaultWebGL2": true,
+   "supportsMouse": true
+  },
+  "dosbox_pure": {
+   "name": "dosbox_pure",
+   "extensions": [
+    "conf"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": true
+  },
+  "fbalpha2012_cps1": {
+   "name": "fbalpha2012_cps1",
+   "extensions": [
+    "zip"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "fbalpha2012_cps2": {
+   "name": "fbalpha2012_cps2",
+   "extensions": [
+    "zip"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "fbneo": {
+   "name": "fbneo",
+   "extensions": [
+    "zip",
+    "7z"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "fceumm": {
+   "name": "fceumm",
+   "extensions": [
+    "fds",
+    "nes",
+    "unif",
+    "unf"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "fuse": {
+   "name": "fuse",
+   "extensions": [
+    "tzx",
+    "tap",
+    "z80",
+    "rzx",
+    "scl",
+    "trd"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "gambatte": {
+   "name": "gambatte",
+   "extensions": [
+    "gb",
+    "gbc",
+    "dmg"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "gearcoleco": {
+   "name": "gearcoleco",
+   "extensions": [
+    "col",
+    "cv",
+    "bin",
+    "rom"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "genesis_plus_gx": {
+   "name": "genesis_plus_gx",
+   "extensions": [
+    "m3u",
+    "mdx",
+    "md",
+    "smd",
+    "gen",
+    "bin",
+    "cue",
+    "iso",
+    "chd",
+    "bms",
+    "sms",
+    "gg",
+    "sg",
+    "68k",
+    "sgd"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "handy": {
+   "name": "handy",
+   "extensions": [
+    "lnx"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "mame2003": {
+   "name": "mame2003",
+   "extensions": [
+    "zip"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "mame2003_plus": {
+   "name": "mame2003_plus",
+   "extensions": [
+    "zip"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "mednafen_ngp": {
+   "name": "mednafen_ngp",
+   "extensions": [
+    "ngp",
+    "ngc"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "mednafen_pce": {
+   "name": "mednafen_pce",
+   "extensions": [
+    "pce",
+    "cue",
+    "ccd",
+    "iso",
+    "img",
+    "bin",
+    "chd"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "mednafen_pcfx": {
+   "name": "mednafen_pcfx",
+   "extensions": [
+    "cue",
+    "ccd",
+    "toc",
+    "chd"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "mednafen_psx_hw": {
+   "name": "mednafen_psx_hw",
+   "extensions": [
+    "cue",
+    "toc",
+    "m3u",
+    "ccd",
+    "exe",
+    "pbp",
+    "chd"
+   ],
+   "defaultWebGL2": true,
+   "supportsMouse": false
+  },
+  "mednafen_wswan": {
+   "name": "mednafen_wswan",
+   "extensions": [
+    "ws",
+    "wsc",
+    "pc2"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "melonds": {
+   "name": "melonds",
+   "extensions": [
+    "nds"
+   ],
+   "defaultWebGL2": true,
+   "supportsMouse": true
+  },
+  "mgba": {
+   "name": "mgba",
+   "extensions": [
+    "gb",
+    "gbc",
+    "gba"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "mupen64plus_next": {
+   "name": "mupen64plus_next",
+   "extensions": [
+    "n64",
+    "v64",
+    "z64",
+    "bin",
+    "u1",
+    "ndd",
+    "gb"
+   ],
+   "defaultWebGL2": true,
+   "supportsMouse": false
+  },
+  "nestopia": {
+   "name": "nestopia",
+   "extensions": [
+    "fds",
+    "nes",
+    "unif",
+    "unf"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "opera": {
+   "name": "opera",
+   "extensions": [
+    "iso",
+    "bin",
+    "chd",
+    "cue"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "parallel_n64": {
+   "name": "parallel_n64",
+   "extensions": [
+    "n64",
+    "v64",
+    "z64",
+    "bin",
+    "u1",
+    "ndd",
+    "gb"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "pcsx_rearmed": {
+   "name": "pcsx_rearmed",
+   "extensions": [
+    "bin",
+    "cue",
+    "img",
+    "mdf",
+    "pbp",
+    "toc",
+    "cbn",
+    "m3u",
+    "ccd"
+   ],
+   "defaultWebGL2": true,
+   "supportsMouse": false
+  },
+  "picodrive": {
+   "name": "picodrive",
+   "extensions": [
+    "bin",
+    "gen",
+    "smd",
+    "md",
+    "32x",
+    "cue",
+    "iso",
+    "sms",
+    "68k",
+    "chd"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "ppsspp": {
+   "name": "ppsspp",
+   "extensions": [
+    "elf",
+    "iso",
+    "cso",
+    "prx",
+    "pbp"
+   ],
+   "defaultWebGL2": true,
+   "supportsMouse": false
+  },
+  "prboom": {
+   "name": "prboom",
+   "extensions": [
+    "wad",
+    "iwad",
+    "pwad"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "prosystem": {
+   "name": "prosystem",
+   "extensions": [
+    "a78",
+    "bin"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "puae": {
+   "name": "puae",
+   "extensions": [
+    "adf",
+    "adz",
+    "dms",
+    "fdi",
+    "ipf",
+    "raw",
+    "hdf",
+    "hdz",
+    "lha",
+    "slave",
+    "info",
+    "cue",
+    "ccd",
+    "chd",
+    "nrg",
+    "mds",
+    "iso",
+    "uae",
+    "m3u",
+    "zip",
+    "7z"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": true
+  },
+  "same_cdi": {
+   "name": "same_cdi",
+   "extensions": [
+    "chd",
+    "iso",
+    "cue"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "smsplus": {
+   "name": "smsplus",
+   "extensions": [
+    "m3u",
+    "mdx",
+    "md",
+    "smd",
+    "gen",
+    "bin",
+    "cue",
+    "iso",
+    "chd",
+    "bms",
+    "sms",
+    "gg",
+    "sg",
+    "68k",
+    "sgd"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "snes9x": {
+   "name": "snes9x",
+   "extensions": [
+    "smc",
+    "sfc",
+    "swc",
+    "fig",
+    "bs",
+    "st"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "stella2014": {
+   "name": "stella2014",
+   "extensions": [
+    "a26",
+    "bin",
+    "zip"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "vice_x128": {
+   "name": "vice_x128",
+   "extensions": [
+    "d64",
+    "d6z",
+    "d71",
+    "d7z",
+    "d80",
+    "d81",
+    "d82",
+    "d8z",
+    "g64",
+    "g6z",
+    "g41",
+    "g4z",
+    "x64",
+    "x6z",
+    "nib",
+    "nbz",
+    "d2m",
+    "d4m",
+    "t64",
+    "tap",
+    "tcrt",
+    "prg",
+    "p00",
+    "crt",
+    "bin",
+    "cmd",
+    "m3u",
+    "vfl",
+    "vsf",
+    "zip",
+    "7z",
+    "gz",
+    "20",
+    "40",
+    "60",
+    "a0",
+    "b0",
+    "rom"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": true
+  },
+  "vice_x64": {
+   "name": "vice_x64",
+   "extensions": [
+    "d64",
+    "d6z",
+    "d71",
+    "d7z",
+    "d80",
+    "d81",
+    "d82",
+    "d8z",
+    "g64",
+    "g6z",
+    "g41",
+    "g4z",
+    "x64",
+    "x6z",
+    "nib",
+    "nbz",
+    "d2m",
+    "d4m",
+    "t64",
+    "tap",
+    "tcrt",
+    "prg",
+    "p00",
+    "crt",
+    "bin",
+    "cmd",
+    "m3u",
+    "vfl",
+    "vsf",
+    "zip",
+    "7z",
+    "gz",
+    "20",
+    "40",
+    "60",
+    "a0",
+    "b0",
+    "rom"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": true
+  },
+  "vice_x64sc": {
+   "name": "vice_x64sc",
+   "extensions": [
+    "d64",
+    "d6z",
+    "d71",
+    "d7z",
+    "d80",
+    "d81",
+    "d82",
+    "d8z",
+    "g64",
+    "g6z",
+    "g41",
+    "g4z",
+    "x64",
+    "x6z",
+    "nib",
+    "nbz",
+    "d2m",
+    "d4m",
+    "t64",
+    "tap",
+    "tcrt",
+    "prg",
+    "p00",
+    "crt",
+    "bin",
+    "cmd",
+    "m3u",
+    "vfl",
+    "vsf",
+    "zip",
+    "7z",
+    "gz",
+    "20",
+    "40",
+    "60",
+    "a0",
+    "b0",
+    "rom"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": true
+  },
+  "vice_xpet": {
+   "name": "vice_xpet",
+   "extensions": [
+    "d64",
+    "d6z",
+    "d71",
+    "d7z",
+    "d80",
+    "d81",
+    "d82",
+    "d8z",
+    "g64",
+    "g6z",
+    "g41",
+    "g4z",
+    "x64",
+    "x6z",
+    "nib",
+    "nbz",
+    "d2m",
+    "d4m",
+    "t64",
+    "tap",
+    "tcrt",
+    "prg",
+    "p00",
+    "crt",
+    "bin",
+    "cmd",
+    "m3u",
+    "vfl",
+    "vsf",
+    "zip",
+    "7z",
+    "gz",
+    "20",
+    "40",
+    "60",
+    "a0",
+    "b0",
+    "rom"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "vice_xplus4": {
+   "name": "vice_xplus4",
+   "extensions": [
+    "d64",
+    "d6z",
+    "d71",
+    "d7z",
+    "d80",
+    "d81",
+    "d82",
+    "d8z",
+    "g64",
+    "g6z",
+    "g41",
+    "g4z",
+    "x64",
+    "x6z",
+    "nib",
+    "nbz",
+    "d2m",
+    "d4m",
+    "t64",
+    "tap",
+    "tcrt",
+    "prg",
+    "p00",
+    "crt",
+    "bin",
+    "cmd",
+    "m3u",
+    "vfl",
+    "vsf",
+    "zip",
+    "7z",
+    "gz",
+    "20",
+    "40",
+    "60",
+    "a0",
+    "b0",
+    "rom"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "vice_xvic": {
+   "name": "vice_xvic",
+   "extensions": [
+    "d64",
+    "d6z",
+    "d71",
+    "d7z",
+    "d80",
+    "d81",
+    "d82",
+    "d8z",
+    "g64",
+    "g6z",
+    "g41",
+    "g4z",
+    "x64",
+    "x6z",
+    "nib",
+    "nbz",
+    "d2m",
+    "d4m",
+    "t64",
+    "tap",
+    "tcrt",
+    "prg",
+    "p00",
+    "crt",
+    "bin",
+    "cmd",
+    "m3u",
+    "vfl",
+    "vsf",
+    "zip",
+    "7z",
+    "gz",
+    "20",
+    "40",
+    "60",
+    "a0",
+    "b0",
+    "rom"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "virtualjaguar": {
+   "name": "virtualjaguar",
+   "extensions": [
+    "j64",
+    "jag",
+    "rom",
+    "abs",
+    "cof",
+    "bin",
+    "prg"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  },
+  "yabause": {
+   "name": "yabause",
+   "extensions": [
+    "cue",
+    "iso",
+    "ccd",
+    "mds",
+    "chd",
+    "zip",
+    "m3u"
+   ],
+   "defaultWebGL2": false,
+   "supportsMouse": false
+  }
+ }
+}

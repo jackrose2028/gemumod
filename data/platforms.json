@@ -1,0 +1,46 @@
+{
+    "platforms": [
+        {
+            "folder": "A2600",
+            "label": "Atari 2600",
+            "system": "atari2600",
+            "short": "Atari 2600"
+        },
+        {
+            "folder": "GB",
+            "label": "Game Boy",
+            "system": "gb",
+            "short": "Game Boy"
+        },
+        {
+            "folder": "GBC",
+            "label": "Game Boy Color",
+            "system": "gb",
+            "short": "Game Boy Color"
+        },
+        {
+            "folder": "GG",
+            "label": "Sega Game Gear",
+            "system": "segaGG",
+            "short": "Game Gear"
+        },
+        {
+            "folder": "NES",
+            "label": "Nintendo Entertainment System",
+            "system": "nes",
+            "short": "NES"
+        },
+        {
+            "folder": "SNES",
+            "label": "Super Nintendo",
+            "system": "snes",
+            "short": "SNES"
+        },
+        {
+            "folder": "N64",
+            "label": "Nintendo 64",
+            "system": "n64",
+            "short": "Nintendo 64"
+        }
+    ]
+}
