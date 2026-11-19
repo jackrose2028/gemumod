@@ -1,0 +1,1035 @@
+EMULATORJS (LOCAL EDITION): ENHANCEMENTS AND CHANGES FROM THE ORIGINAL EMULATORJS
+====================================================================================================
+
+This document lists every change this copy makes to the original EmulatorJS 4.3.0-pre source
+(github.com/EmulatorJS/EmulatorJS). The changes were made in five rounds: an efficiency rewrite that
+makes everything run from local files, 50 player-facing enhancements, 50 engine improvements, a game
+library with its own game page, and a second engine, NostalgistMod (built from Nostalgist.js), that
+you can choose instead of EmulatorJSMod. The detailed lists below start with the newest round. A
+sixth round, added later, is described in the addendum at the end: 15 performance features in
+EmulatorJSMod and the game folders loading in both engines. A seventh round, the second addendum,
+makes EmulatorJSMod draw only the game picture into a smaller, whole-number scaled buffer, which
+cuts the pixels drawn per frame by about a quarter to two thirds. An eighth round, the third
+addendum, makes the drawing surface of the game opaque and, for 2D systems, drops its unused depth
+and stencil buffers, so the browser composites less and the graphics chip holds less memory. A ninth
+round, the fourth addendum, adds the ObsoleteMod game shelf to the site, running on EmulatorJSMod,
+with a new Links page to reach it. A tenth round, the fifth addendum, adds the reference docs (one
+page per project file) with a viewer reached from the home page and the Links page. An eleventh
+round, the sixth addendum, gives phones and iPhones their own layout that follows rotation, with a
+game menu sheet and an on-screen controller for NostalgistMod. A twelfth round, the seventh
+addendum, stops the EmulatorJSMod audio processing while a game is paused or hidden and brings
+iPhone sound back after interruptions. A thirteenth round, the eighth addendum, adds an in-game save
+slot picker with a picture of every save. A fourteenth round reviews the whole site on iPhone and
+other phones and fixes what that found, and a fifteenth adds a 2.5D mode for NES and SNES games,
+switched on with the 2.5D button on the home page. A sixteenth round asks for the system and core
+before any game file opens and reads inside zips, fixing N64 zips that started as arcade games.
+
+Nothing in this document changes how games are emulated: the same libretro cores (the supplied .7z
+files, unmodified) do the emulation. What changed is how the cores and games are found, downloaded,
+cached, saved, controlled and presented.
+
+====================================================================================================
+CONTENTS
+====================================================================================================
+
+  - 1. Overview: what is different at a glance
+  - 2. How to use this edition
+  - 3. Files added, removed and changed
+  - 4. Round 5: two engines, EmulatorJSMod and NostalgistMod
+  - 5. Round 4: game library folders and game page
+  - 6. Round 3: 50 engine improvements
+  - 7. Round 2: 50 enhancements
+  - 8. Round 1: efficiency rewrite for local hosting (20 changes)
+  - 9. Compatibility notes and known limits
+  - Addendum (round 6): 15 performance features and folder games in both engines
+  - Addendum (round 7): picture-sized render buffer for graphics efficiency
+  - Addendum (round 8): lean opaque game surface for graphics efficiency
+  - Addendum (round 9): ObsoleteMod and the Links page
+  - Addendum (round 10): reference docs viewer
+  - Addendum (round 11): phone and iPhone view
+  - Addendum (round 12): idle audio suspension for audio efficiency
+  - Addendum (round 13): save slot picker with pictures
+  - Addendum (round 14): iPhone and mobile review
+  - Addendum (round 15): 2.5D mode for NES and SNES
+  - Addendum (round 16): system and core chosen before a game file opens
+
+====================================================================================================
+1. OVERVIEW: WHAT IS DIFFERENT AT A GLANCE
+====================================================================================================
+
+  - Runs 100% from local files: no CDN, no update check, no external requests. Works on GitHub Pages
+    and on any static web server.
+  - Uses the core archives exactly as built (<core>[-thread][-legacy]-wasm.7z) and picks the right
+    variant from data/cores/manifest.json.
+  - Threads work on GitHub Pages: sw.js adds the cross-origin isolation headers that GitHub Pages
+    cannot send.
+  - Offline support and fast repeat visits through the service worker and the IndexedDB cache.
+  - A new home page: drop a ROM (with BIOS and patch), automatic system detection, a game library
+    from data folders, recent games, save backup, and help text on every option.
+  - A game page with Home link and Platform / Game dropdowns.
+  - In-game hotkeys (F1 to F11), controller hotkeys, persistent quick-save slots, resume points,
+    auto-pause and more.
+  - Save states work with the supplied 4.2-era cores (they failed in the original 4.3.0-pre code
+    with these cores).
+  - Many engine bugs fixed: lost saves on exit, a cache that evicted the newest items, stuck keys,
+    startup hangs, leaked listeners and more.
+  - Performance tools (addendum): live stats, performance mode, render resolution, run-ahead, audio
+    latency, refresh-rate adaptation, per-game profiles and more.
+  - Graphics efficiency (addendum 7): the game is drawn into a buffer the size of its picture, not
+    the whole player, in whole-number steps of its own resolution: 26 to 65% fewer pixels per frame
+    in tests, most on high-DPI and 4K screens.
+  - Graphics efficiency (addendum 8): an opaque game surface the browser can copy or overlay instead
+    of blending, without the depth and stencil buffers 2D systems never use (4 to 21 MB of video
+    memory freed).
+  - Load game dialog (addendum 16): the detected system and the core are shown and can be changed
+    before every ROM or zip opens; zips are identified from the game file inside them, never assumed
+    to be arcade.
+  - 2.5D mode (addendum 15): NES and SNES games redrawn with raised, lit blocks, shadows and a
+    dimmed background layer, turned on with the 2.5D button on the home page and tuned per game in
+    F1.
+  - iPhone and mobile review (addendum 14): pictures kept clear of the touch controls on small
+    phones, ObsoleteMod fixed on phones, no layout flash, better reference docs and menus on small
+    screens.
+  - In-game save slot picker (addendum 13): Shift+F2 or Select+Up shows all nine quick-save slots
+    with pictures and times, to save, load or delete with mouse, touch, keyboard or controller.
+  - Audio efficiency (addendum 12): the audio engine is suspended while a game is paused or in the
+    background (about 18% less browser CPU while paused in tests) and resumes cleanly; iPhone sound
+    returns after calls or app switches.
+  - Phone and iPhone view (addendum 11): a separate layout chosen from the device, portrait and
+    landscape layouts that switch live on rotation, a game menu sheet, touch controls for both
+    engines and iPhone home-screen support.
+  - Reference docs (addendum 10): one explained page for every file, with a filterable viewer
+    (reference.html), linked from the home page and the Links page.
+  - A third front end, ObsoleteMod (addendum 9): the Emu retro game shelf, reached from the new
+    Links page and running on the same local engine and cores.
+  - Two engines to choose from when the site opens: EmulatorJSMod (the full EmulatorJS player) and
+    NostalgistMod (Nostalgist.js adapted to the same local cores, with a toolbar and persistent
+    saves).
+
+====================================================================================================
+2. HOW TO USE THIS EDITION
+====================================================================================================
+
+Running it
+----------
+  - GitHub Pages: upload the whole folder (including data/cores/*.7z) to a repository, then Settings
+    > Pages > Deploy from a branch > main / root.
+  - On your own PC: double-click start-windows.bat (needs Python), or run: python3 serve.py 8000,
+    then open http://localhost:8000.
+  - Opening index.html directly from disk (file://) does not work; the page shows a message
+    explaining this.
+
+Adding games
+------------
+  - Put ROMs or zips into data/A2600, data/GB, data/GBC, data/GG, data/NES, data/SNES or data/N64.
+  - On GitHub the game lists update automatically after each push (GitHub Actions workflow update-
+    indexes.yml). Locally, new files appear at once when you use start-windows.bat or serve.py;
+    otherwise run: node tools/generate-rom-index.mjs.
+  - Another platform: add a folder and a line to data/platforms.json (folder, label, short name,
+    EmulatorJS system id).
+  - Only add games you have the right to share: a GitHub Pages site is public.
+
+Playing
+-------
+  - Pick an engine when the site opens (EmulatorJSMod or NostalgistMod); change it with Change on
+    the home page or the Engine dropdown on the game page.
+  - Click a game in the Game library, a Recent game, or drop a file. The game opens on play.html.
+  - Switch games with the Platform and Game dropdowns at the top; Home returns to the start page.
+  - On a phone the game page has a menu button (or a handle at the top in landscape) with saves,
+    game choice, engine and on-screen controls; on iPhone use Share > Add to Home Screen for full
+    screen.
+  - Open links.html (Links on the home page or the game page) for every part of the site, including
+    ObsoleteMod.
+  - Open play.html (or Open the library in the player on the home page) to browse every game in the
+    folders inside the player, with either engine.
+  - When you open a ROM or zip, check the system and core in the Load game dialog and press Start
+    game; tick “Use this core for every ... game” to keep a core.
+  - Press the 2.5D button on the home page to play NES and SNES games in 2.5D; Shift+F8 in game
+    switches between 2.5D and the flat picture.
+  - Shift+F2 (Select+Up on a controller) opens the save slot picker with a picture of each save.
+  - In game press F1 for all hotkeys: F2 save, F3 slot, F4 load, Shift+F4 undo load, F5 pause,
+    Shift+F5 reset, F6 fast forward, F7 slow motion, F8 screenshot, F9 mute, Shift+F9 performance
+    mode, F10 FPS, Shift+F10 performance stats, F11 fullscreen. On a controller hold Select and
+    press R1 / L1 / R2 / L2 / Start.
+
+====================================================================================================
+3. FILES ADDED, REMOVED AND CHANGED
+====================================================================================================
+
+Added
+-----
+  - assets/mobile.js and assets/touch-pad.js: the phone view and the NostalgistMod on-screen
+    controller.
+  - reference.html, assets/reference.js, assets/vendor (marked, DOMPurify), reference-docs/ and
+    tools/generate-reference-index.mjs: the reference docs and their viewer.
+  - links.html: the Links page. obsoletemod/: the ObsoleteMod game shelf, with a local JSZip in
+    obsoletemod/vendor.
+  - engines/EmulatorJSMod.js: entry point for the EmulatorJS engine.
+  - engines/NostalgistMod.js: Nostalgist.js bundle adapted to the local cores; tools/nostalgist-mod
+    holds its modified source, MIT licence and build script.
+  - assets/nostalgist-player.js: the NostalgistMod player (toolbar, saves, hotkeys).
+  - play.html, assets/play.js: the game page.
+  - assets/app.js, app.css, common.js, detect.js, folders.js, library.js, backup.js, tooltips.js:
+    the home page and shared launcher code.
+  - data/src/performance.js: the performance features of the addendum.
+  - data/src/enhancements.js: hotkeys, save slots, resume points and other in-game features.
+  - data/cores/manifest.json and tools/generate-core-manifest.mjs: the list of installed cores.
+  - data/platforms.json, data/<FOLDER>/index.json and README.txt, tools/generate-rom-index.mjs: the
+    game library.
+  - .github/workflows/update-indexes.yml: keeps the game lists and core list up to date on GitHub.
+  - sw.js: offline cache and cross-origin isolation for threads.
+  - manifest.webmanifest: lets the site be installed as an app.
+  - start-windows.bat: one-click local server on Windows.
+  - .nojekyll: makes GitHub Pages serve every file as-is.
+  - ENHANCEMENTS.txt (this file).
+
+Removed
+-------
+  - Upstream CI and packaging: .github/workflows (eslint, latest, newlines, npm, stable),
+    FUNDING.yml, ISSUE_TEMPLATE, build.js, update.js, package-lock.json, .npmignore,
+    data/cores/package.json and its npm files.
+  - Editor and agent files: .devcontainer, .vscode, eslint.config.js, jsconfig.json, AGENTS.md,
+    CLAUDE.md, CONTRIBUTING.md, CODE_OF_CONDUCT.md, data/compression/README.md.
+
+Changed
+-------
+  - index.html: replaced by the new home page.
+  - data/loader.js: imports emulator.js directly, loads files in parallel, reads the core manifest,
+    shows an error in the player when the engine is missing.
+  - data/src/emulator.js, GameManager.js, frontend.js, cache.js, storage.js, compression.js,
+    gamepad.js, utils.js: see rounds 1 to 4 below.
+  - .gitignore: no longer excludes data/cores (the original rule would have kept the cores out of
+    the repository).
+  - .gitattributes: binary files and Windows line endings for .bat files.
+  - package.json: trimmed to the scripts this edition uses; README.md rewritten; CHANGES.md
+    extended.
+
+====================================================================================================
+4. ROUND 5: TWO ENGINES, EMULATORJSMOD AND NOSTALGISTMOD
+====================================================================================================
+
+Engine choice
+-------------
+  1. When the site opens, a dialog asks which engine to use: EmulatorJSMod or NostalgistMod. The
+     question is asked once per browser session; "Remember my choice" stops it. The home page shows
+     the current engine with a Change button.
+  2. The game page has an Engine dropdown that restarts the current game with the other engine;
+     links between games keep it.
+  3. A file dropped while the question is open waits for the answer.
+  4. engines/EmulatorJSMod.js is the entry point for the existing engine (data/loader.js +
+     data/src).
+
+NostalgistMod (engines/NostalgistMod.js, source and build script in tools/nostalgist-mod)
+  5. Built from the Nostalgist.js source (MIT) with no CDN access at all: cores are read from
+     data/cores/*.7z and unpacked with the site's own 7z worker; the CDN ROM and shader lookups and
+     the zip.js download are removed.
+  6. Runs the EmulatorJS core builds as they are: a loader for their EJS_Runtime module format and
+     Module.parent.
+  7. Input bridge: these builds take input through simulate_input, not RetroArch's keyboard driver,
+     so keyboard (Nostalgist's default bindings), gamepads (standard layout, left stick also as
+     d-pad, analog sticks) and press() / pressDown() / pressUp() are routed there. Held buttons are
+     released on blur and when the tab is hidden.
+  8. Save and load state use the builds' in-memory state functions; screenshots read the builds'
+     fixed screenshot path.
+  9. A File passed to Nostalgist keeps its name (it became data1.bin, which broke patches and
+     cue/bin sets).
+  10. Only single-threaded core builds are used (Nostalgist does not start pthreads); PSP and DOS
+      show a message with a button to switch to EmulatorJSMod.
+
+NostalgistMod player on the game page (assets/nostalgist-player.js)
+-------------------------------------------------------------------
+  11. Toolbar: Pause/Resume, Reset, Save state, Load state, Screenshot, Fullscreen, Exit.
+  12. Hotkeys F2 save, F4 load, F5 pause, Shift+F5 reset, F8 screenshot, F11 fullscreen (same as
+      EmulatorJSMod).
+  13. In-game saves (SRAM) are restored on start and written every 30 s, when the tab is hidden and
+      on exit; save states are kept per game. Both live in IndexedDB ("NostalgistMod-saves").
+  14. Patches, BIOS files and zipped ROMs work as with EmulatorJSMod; the canvas follows the player
+      size; sound starts on the first click or key press.
+
+====================================================================================================
+5. ROUND 4: GAME LIBRARY FOLDERS AND GAME PAGE
+====================================================================================================
+
+Game library folders
+--------------------
+  1. New folders data/A2600, data/GB, data/GBC, data/GG, data/NES, data/SNES and data/N64 for ROMs
+     and zips.
+  2. data/platforms.json maps each folder to its system; add a line and a folder to add another
+     platform.
+  3. The home page lists the games in those folders after the core list has loaded, and only for
+     platforms whose cores exist.
+  4. tools/generate-rom-index.mjs writes data/<FOLDER>/index.json, because GitHub Pages cannot list
+     folders.
+  5. .github/workflows/update-indexes.yml regenerates the game lists and the core manifest on every
+     push, so games uploaded through the GitHub website appear without running anything locally.
+  6. On a local server that lists folders (serve.py, start-windows.bat) new files appear without
+     regenerating the index.
+
+Game page (play.html)
+---------------------
+  7. Every game now opens on its own page with a Home link and the game name.
+  8. A Platform dropdown (folders with games, plus Recent games) and a Game dropdown switch to
+     another game in one step.
+  9. Files opened from your device are stored with their BIOS and patch, so the game page (and a
+     reload of it) can open them.
+  10. A BIOS or patch chosen under Options also applies to the next game opened from a library link.
+  11. Exiting the game, or "Back to menu" after an error, returns to the home page.
+
+Home page
+---------
+  12. Every option, section and button has a three-sentence explanation on hover, on keyboard focus,
+      or by tapping its "?" badge.
+  13. "What's changed from the original EmulatorJS" opens ENHANCEMENTS.txt, a full list of the
+      changes.
+
+Fixes found while building this
+-------------------------------
+  14. Engine: files downloaded from a URL keep their real name ("Green Test.nes", not
+      "Green%20Test.nes", and no "?v=…" suffix), so patches and companion files (cue/bin, m3u) find
+      each other.
+  15. Service worker: game lists and folder listings are always fetched fresh, and ROMs in the
+      folders are not cached a second time (EmulatorJS keeps its own copy).
+  16. The core manifest no longer contains a timestamp, so it only changes when the cores change.
+
+====================================================================================================
+6. ROUND 3: 50 ENGINE IMPROVEMENTS
+====================================================================================================
+
+Under-the-hood work in data/src (no change to how the page is used).
+
+Saves and data safety
+---------------------
+  1. On exit, IndexedDB saves are flushed (syncfs) before /data/saves is unmounted; the last in-game
+     save could be lost before.
+  2. In-game saves are written when the tab is hidden (mobile browsers often close hidden tabs
+     without unload events).
+  3. Loading saves from IndexedDB can no longer hang startup: errors and a 10 s timeout fall back to
+     in-memory saves with a warning.
+  4. In-game saves are not rewritten every interval while the game is paused.
+  5. disableDatabases, or a browser without IndexedDB, uses no-op save-state storage instead of
+     failing.
+  6. Settings writes survive a full or blocked localStorage instead of throwing during page hide.
+  7. Per-game settings are parsed once and cached until the next write (they were re-parsed on every
+     getCore() call).
+  8. A malformed per-game settings entry no longer stops volume and mute from loading.
+
+Startup and errors
+------------------
+  9. The first start error is kept on screen; follow-on errors no longer overwrite the real cause.
+  10. startGameError cannot throw halfway (it crashed when saved settings existed but the core had
+      not loaded), so the error screen always appears.
+  11. Startup failures anywhere in the download/initialisation chain now show an error instead of
+      stalling on the loading text.
+  12. A failed save-state download no longer leaves startup waiting forever.
+  13. Core archives are validated: a missing .js/.wasm or bad core.json gives "Invalid core archive"
+      instead of a crash.
+  14. Missing PPSSPP assets (ppsspp-assets.zip, not in the supplied cores) no longer stop PSP games
+      from starting.
+  15. In-memory ROM/BIOS data that cannot be read resolves as a failed download instead of hanging.
+  16. Errors in a local archive (corrupt zip/7z) are reported with the file name, labelled as game
+      data, not "Game Core".
+  17. Archives that contain only junk entries report "No game file found".
+  18. Late progress updates after the game started no longer throw (loading text removed); errors
+      recreate the text if needed.
+  19. The loader finds its own path when document.currentScript is unavailable, and shows a message
+      in the player box when the engine files are missing.
+
+Loading performance
+-------------------
+  20. Local uncompressed ROMs are used directly: no full-file hash and no second copy in IndexedDB
+      (a 700 MB disc image was duplicated before).
+  21. Cache blob writes for one item happen in a single transaction, with the manifest written last
+      so a partial write never looks complete.
+  22. Cache blob reads issue all chunk requests in one transaction and merge into one buffer.
+  23. getKeys() reads keys only; the old cursor loaded every cached chunk into memory during
+      cleanup.
+  24. The cache database is opened once (it was opened in parallel by every download) and the probe
+      connection is closed.
+  25. If the cache database cannot be opened the cache switches off and downloads continue.
+  26. Cache eviction removes the least recently used items; the old loop evicted the newest items
+      first.
+  27. Directories created while unpacking archives are remembered instead of re-checked for every
+      file.
+  28. External support files download in parallel, and one failure no longer affects the others.
+  29. Which cores exist locally is computed once from the manifest instead of scanning it on every
+      lookup.
+
+Input
+-----
+  30. Keys and buttons held while the window loses focus or the tab is hidden are released (they
+      stayed pressed in the game).
+  31. Buttons held on a controller that disconnects are released for that player.
+  32. The emulator-hotkey input path no longer allocates an array per input event.
+  33. Quick load reports an empty slot ("SLOT n IS EMPTY") instead of claiming success.
+  34. Play/pause and autofire release are safe to call before the core is running.
+
+Audio and video
+---------------
+  35. Suspended audio resumes on the first click, key or tap on every browser (was Safari-only,
+      polling every 10 ms); the Safari prompt closes on the audio state change.
+  36. Volume values are clamped to 0..1 and ignored safely before the core has loaded.
+  37. The WebGL2 support probe releases its context (browsers cap live WebGL contexts).
+  38. iPadOS (desktop user agent) and browsers with UA client hints are detected as mobile.
+  39. Screenshots use a valid image type (jpg becomes image/jpeg, unknown types fall back to PNG); a
+      failed encode retries as PNG.
+  40. RetroArch-source screenshots time out after 5 s and fall back to the canvas instead of polling
+      forever.
+  41. The player reacts to container size changes (ResizeObserver), not only window resizes.
+
+Engine structure
+----------------
+  42. Event handlers are isolated: one failing on() handler no longer stops the rest (or the game
+      start).
+  43. off(event, handler) added.
+  44. Exit tears everything down: all DOM listeners (826 in a SNES session), timers, gamepad polling
+      and the resize observer.
+  45. Only the ROM download renames config.gameUrl; a BIOS or patch passed as data used to overwrite
+      it.
+  46. getBaseFileName and saveInBrowserSupported handle a File ROM (they threw on .startsWith).
+  47. Core options: configured defaults are always written, saved values override by exact key (a
+      saved foo_bar used to hide the default for foo), and empty values are quoted.
+  48. RetroArch config values are stripped of quotes and line breaks so a value cannot break or
+      inject config lines.
+  49. Multi-disc playlists sort naturally ("Disc 2" before "Disc 10") and no longer require names
+      that start with a digit.
+  50. Routine logs only appear in debug mode (core download, extraction choices, repeated gameId
+      warning).
+
+Also fixed in the launcher: a file picked in the first seconds of a first visit could be lost to the
+one-time
+service-worker reload; it now waits for setup, and that reload never happens under a running game.
+
+====================================================================================================
+7. ROUND 2: 50 ENHANCEMENTS
+====================================================================================================
+
+New data/src/enhancements.js (engine) and a rebuilt launcher (index.html, assets/*.js).
+Turn the engine layer off with window.EJS_disableEnhancements = true (config disableEnhancements).
+
+In game: hotkeys and controls
+-----------------------------
+  1. Hotkey layer on F-keys: ignored while typing, remapping or in menus, and never sent to the
+     game.
+  2. F1 panel: hotkey list, play time, used save slots and on/off switches for the options below
+     (remembered).
+  3. F2 quick save to the current slot.
+  4. F3 / Shift+F3 next / previous slot, showing whether it is used or empty.
+  5. F4 quick load, with a clear "slot is empty" message instead of a silent no-op.
+  6. Shift+F4 undo the last load (or reset / resume).
+  7. F5 pause / resume.
+  8. Shift+F5 reset game (undoable).
+  9. F6 fast forward on / off.
+  10. F7 slow motion on / off.
+  11. F8 screenshot download.
+  12. F9 mute / unmute.
+  13. F10 FPS counter overlay.
+  14. F11 fullscreen.
+  15. Controller hotkeys while holding Select: R1 save, L1 load, R2 fast forward, L2 next slot,
+      Start pause. The combo button is not passed to the game.
+  16. Controller rumble on save and load (when supported).
+
+Saves
+-----
+  17. Quick-save slots are kept in IndexedDB and restored next time (they were lost on reload).
+  18. A resume point is saved when the tab is hidden, the page closes or the game exits.
+  19. On start, a prompt offers to resume from that point.
+  20. In-game (SRAM) saves are flushed every 30 s by default, unless an interval is configured.
+  21. Persistent storage is requested so the browser does not evict saves.
+  22. Save states work with the supplied 4.2-era cores: getState falls back to save_state_info when
+      the core has no EmulatorJSGetState (previously every save state failed with these cores).
+
+In game: session
+----------------
+  23. Pause when the tab is hidden; resume when it comes back.
+  24. Pause when a controller disconnects.
+  25. Screen Wake Lock while playing.
+  26. Media Session: game title and play / pause from system media controls.
+  27. Tab title shows the game name.
+  28. Mouse cursor hides after 2.5 s idle.
+  29. Optional CRT scanline overlay.
+  30. Play time per game (shown in F1 panel and the recent games list).
+  31. Low battery (15 %, not charging): resume point saved and a warning shown.
+  32. Portrait-phone hint to rotate for a bigger picture.
+  33. WebGL context loss: message with a reload button instead of a frozen canvas.
+  34. "Back to menu" button when a game fails to start.
+
+Engine: downloads and storage
+-----------------------------
+  35. Transient download failures are retried twice with backoff; 404s fail immediately.
+  36. Stalled downloads time out after 30 s without data (before, only the headers had a timeout).
+  37. Items are not cached when the storage quota cannot hold them.
+  38. IndexedDB opens at the existing version and reconnects after a close, so restored or upgraded
+      databases stay readable.
+  39. The service worker also precaches the decompression workers and launcher modules.
+
+Launcher
+--------
+  40. Recent games: ROMs are kept in IndexedDB for one-click play (12 most recent, up to 512 MB
+      each).
+  41. Remove a game from the list; entries whose data is gone are cleaned up.
+  42. Each entry shows system, last played and play time.
+  43. Header detection for ambiguous files (.bin/.iso/.cue …): NES/FDS, N64, GB, GBA, NDS, Genesis,
+      32X, Master System, Game Gear, Lynx, Atari 7800, Sega CD, Saturn, 3DO, PlayStation and PSP.
+  44. Zip detection from the file names inside (no extraction), e.g. a zip containing a .nes runs as
+      NES.
+  45. IPS / BPS / UPS patches applied on load (drop with the ROM, or choose in Options).
+  46. Multi-file drop: ROM, BIOS and patch are sorted out automatically.
+  47. Options are remembered; the system picker can remember a choice per extension and can be
+      cancelled.
+  48. Installable as an app (web manifest) and warnings when WebAssembly, WebGL or https are
+      missing.
+  49. "New version available" banner, plus storage usage and a "Clear download cache" button.
+  50. Export / import of all saves, save states and settings as one backup file.
+
+====================================================================================================
+8. ROUND 1: EFFICIENCY REWRITE FOR LOCAL HOSTING (20 CHANGES)
+====================================================================================================
+
+Local-only build of 4.3.0-pre for static hosting. Behaviour is unchanged unless listed here.
+
+  1. No CDN use: the CDN core fallback, the update check and the "download minified files" hints are
+     gone.
+  2. Cores load from data/cores/<core>[-thread][-legacy]-wasm.7z exactly as built (no renaming to
+     .data).
+  3. The per-core reports/*.json request is gone. The reports are not part of the supplied cores, so
+     it returned 404 on every launch, and the random fallback version it then used meant the cached
+     core was never found: the core was downloaded and unpacked again each time.
+  4. data/cores/manifest.json (generated by tools/generate-core-manifest.mjs) lists the cores that
+     exist, their extensions and WebGL2 defaults. Variant selection falls back across thread/legacy
+     builds that are present.
+  5. loader.js imports emulator.js directly instead of probing for a .min file, and fetches script,
+     styles, language pack and manifest in parallel.
+  6. Netplay, socket.io and the license text are loaded on first use (about 170 kB less at startup).
+  7. IndexedDB: one shared connection per database instead of opening a new, never-closed connection
+     for every call.
+  8. IndexedDB: getAll/getKeys use a single cursor, and the racy ?EJS_KEYS! read-modify-write index
+     is no longer maintained.
+  9. Cache keys use a word-wise 32-bit hash (about 22 ms for 10 MB) instead of a per-byte loop.
+  10. Cache put checks for an existing entry without loading its blobs; get no longer waits on the
+      access-time write.
+  11. Downloads fill a pre-sized buffer (no chunk list + Blob + copy) and report progress once per
+      percent.
+  12. sw.js caches the app and recently used cores for fast repeat visits and offline use.
+  13. sw.js adds COOP/COEP headers so threaded cores work on GitHub Pages.
+  14. Gamepad polling follows display frames while a pad is connected and idles at 2 Hz otherwise
+      (was a 100 Hz timer with per-poll allocations).
+  15. Core script and wasm blob URLs are created once and released; locateFile no longer leaks a URL
+      per call.
+  16. Decompression worker scripts are fetched once and reused, workers are terminated when done,
+      and worker errors now surface instead of hanging.
+  17. ROM, BIOS, save state, parent and patch downloads run in parallel.
+  18. Window resize is throttled to one run per frame; fullscreen changes now actually re-run the
+      resize handler (the old code only called .bind).
+  19. Settings are written to localStorage after a short debounce and when the page is hidden.
+  20. getCores() no longer mutates the shared table (on iOS Safari it reversed the N64 core order on
+      every call).
+
+Also: new index.html (system picker limited to available cores, whole-page drag and drop, exit
+returns to the
+menu), cache manager no longer throws when the cache is disabled, .gitignore no longer excludes
+data/cores,
+and upstream CI/dev-container/packaging files were removed.
+
+====================================================================================================
+9. COMPATIBILITY NOTES AND KNOWN LIMITS
+====================================================================================================
+
+  - The supplied cores are 4.2-era builds. This edition reads their save states through
+    save_state_info when the newer EmulatorJSGetState export is missing.
+  - PSP: ppsspp-assets.zip is not part of the supplied cores. PSP games start without it, but some
+    may lose system fonts. PSP and DOS need threads.
+  - Dreamcast, PS2 and Xbox have no cores in this set and are not offered.
+  - NostalgistMod uses only single-threaded core builds, so PSP and DOS need EmulatorJSMod. Its keys
+    follow Nostalgist's defaults (arrows, X = A, Z = B, S = X, A = Y, Q/W = L/R, Enter = Start,
+    Right Shift = Select); the RetroArch on-screen menu is not used. It was tested with NES and
+    SNES; other systems use the same path but were not tried with real games.
+  - Nostalgist.js is MIT licensed (tools/nostalgist-mod/LICENSE.txt, also in the header of
+    engines/NostalgistMod.js).
+  - Threads need https (GitHub Pages) or localhost; the page reloads itself once on the first visit
+    to switch them on. Safari and some mobile browsers may not support them.
+  - Opening index.html from disk (file://) is blocked by browsers; use a local server.
+  - Load game dialog: tested with an N64 zip (named normally, with the game renamed rom.bin, and
+    with a readme next to it), an NES zip and a zip of unknown files; the chosen core (parallel_n64)
+    was confirmed running. 7z archives cannot be looked inside before loading, so their system is
+    always asked. Games opened from the library folders use the folder’s system and the remembered
+    core without the dialog.
+  - 2.5D mode: depth comes from colours, not the game’s own layers, so it is a general effect rather
+    than a per-game 3D remake; plain-backdrop NES games layer best. Tested in Chrome with Dr. Mario
+    (NES) and Donkey Kong Country (SNES) on desktop and an emulated iPhone. Under software graphics
+    (no graphics chip) it lowers its resolution to keep speed and still costs frames; on devices
+    with a graphics chip it is light.
+  - Mobile review: done in Chrome emulating iPhone SE, iPhone 15, iPhone 15 Pro Max and an Android
+    phone; Safari-only behaviour (toolbar height, home-screen mode, audio after interruptions)
+    follows the documented Apple behaviour and was not measured on a physical iPhone.
+  - Save slot picker: tested in Chrome on desktop and emulated iPhone (portrait and landscape) with
+    keyboard, mouse and touch; the controller keys use the standard gamepad layout and were not
+    tried with a physical controller. Slots saved before this change have no picture until saved
+    again.
+  - Idle audio suspension: measured in headless Chrome (CPU time of all browser processes, audio
+    clock); the iPhone interruption recovery follows the documented Safari interrupted state and was
+    not tried on a physical iPhone. A game running muted keeps its audio running, as RetroArch still
+    fills the audio queue.
+  - Phone view: tested in Chrome emulating an iPhone (390×844 at 3×) and an Android phone (412×915),
+    in portrait, landscape and rotating while a game runs, with both engines, the game menu, the
+    NostalgistMod controller (checked with a test ROM that changes colour while A is held), the home
+    page and the library. It was not tried on a physical iPhone; Safari behaviour such as the
+    toolbar height and the home-screen mode follows the documented Apple tags and was not measured.
+    Vibration works on Android only.
+  - Reference docs: the documents were supplied as they are and describe the project as of round 6
+    (for example the service worker version they mention); later rounds are covered by this file and
+    CHANGES.md. Tested in Chrome: opening, links between documents, heading links, Back, the filter
+    and an address outside the list (which opens the overview).
+  - ObsoleteMod: tested in Chrome with Dr. Mario (NES), Frogger (SNES) one after the other in the
+    same page, Asteroids (Atari 2600), Harvest Moon 64 (N64) and a ZIP import; its ROM files are not
+    included in the download. Its ROM links page points to outside sites and is kept as it was
+    supplied.
+  - Lean opaque game surface: tested in Chrome with NES and SNES, with and without a shader.
+    3D-capable cores (N64, PSP, DS, Dreamcast, Saturn, 3DS, hardware PlayStation, DOS) keep their
+    depth and stencil buffers; N64 was not tried with a real game here. Switch it off in the F1
+    panel if a core ever shows missing graphics.
+  - Picture-sized render buffer: tested in Chrome at 1× and 2× pixel density with SNES and NES. With
+    a shader, or on mouse and light-gun cores, the buffer keeps its full resolution. The Buffer line
+    in the Shift+F10 stats shows what it is doing; the F1 panel can switch it off.
+  - Performance features: render resolution and the stats were tested in Chrome; the desynchronized
+    canvas, battery power saver and refresh-rate adaptation depend on browser and hardware support.
+    Frameskip only applies to cores that offer a frameskip option (not snes9x).
+  - Features that need real hardware (controller rumble, battery warning, screen wake lock,
+    installing as an app) depend on browser support and were not tested on real devices.
+  - EmulatorJS is licensed under GPL-3.0 (see LICENSE). Each core archive contains its own
+    license.txt.
+
+====================================================================================================
+ADDENDUM (ROUND 6): 15 PERFORMANCE FEATURES AND FOLDER GAMES IN BOTH ENGINES
+====================================================================================================
+
+Performance features in EmulatorJSMod (data/src/performance.js)
+---------------------------------------------------------------
+  1. Live performance stats, Shift+F10: emulation speed in % of full speed, frame time average and
+     worst, late frames, display refresh rate, render resolution, graphics chip and WebGL version,
+     core build, JS memory and startup time.
+  2. Startup timing: how long the core download, the game load and the boot took, shown in the stats
+     and the F1 panel (and in the console with ?debug=1).
+  3. Slow-game detector: after a warm-up, a game that runs below 90% speed for 10 seconds offers
+     performance mode once.
+  4. Performance mode, Shift+F9 or the F1 panel: one switch for features 5 to 7, on and off while
+     playing.
+  5. Render resolution 100%, 75% or 50%: RetroArch draws into a smaller buffer that is stretched to
+     the same size on screen, which cuts the GPU work on weak or very high-resolution screens. Mouse
+     cores always use 100%.
+  6. Automatic frameskip: in performance mode, cores that offer a frameskip option are set to auto
+     (or 1), and back again.
+  7. Shader bypass: in performance mode the chosen shader is switched off and restored afterwards.
+  8. Low-latency canvas: the game canvas is created with a desynchronized WebGL context, so frames
+     reach the screen without waiting for the page compositor (less input lag where the browser
+     supports it).
+  9. Run-ahead (optional, off by default): RetroArch's single-instance run-ahead of one frame
+     removes a frame of built-in game lag at the cost of extra CPU. Skipped in performance mode.
+  10. Refresh-rate adaptation: the display rate is measured at start; on 120, 180 and 240 Hz screens
+      RetroArch presents every 2nd, 3rd or 4th refresh so 60 fps games keep their normal speed and
+      smooth pacing.
+  11. Audio latency choice: Low 32 ms, Normal 64 ms, Safe 96 ms or Stable 128 ms (was fixed at 64
+      ms). Lower is more responsive, higher stops crackling on slow devices.
+  12. Software graphics warning: when the browser draws WebGL in software (SwiftShader, llvmpipe,
+      Basic Render Driver), a message explains how to turn on hardware acceleration and offers
+      performance mode.
+  13. Per-game performance profiles: every setting above is saved per game, and a new game starts
+      with the settings used last.
+  14. Core prefetch: pointing at (or tabbing to) a game on the home page or in the player's library
+      downloads its core in the background, so it is cached when the game starts. Skipped with data
+      saver or on 2G connections.
+  15. Low-battery power saver: on battery at 20% or less, performance mode turns on for the session,
+      with a button to undo.
+
+The F1 panel has a new Performance section with these settings. Run-ahead, audio latency, low-
+latency canvas and the refresh-rate adaptation apply from the next game start (RetroArch reads them
+at boot); the others apply at once.
+
+Folder games in both engines
+----------------------------
+  16. play.html without a game opens the game library inside the player: once the chosen engine and
+      the core list are loaded, every ROM and zip in data/A2600, GB, GBC, GG, NES, SNES and N64 is
+      listed by platform and starts with one click, in EmulatorJSMod or NostalgistMod. Platforms the
+      engine cannot run are shown disabled with the reason.
+  17. play.html?folder=NES lists one folder; adding &autoplay=1 starts its first game.
+  18. The home page loads the chosen engine before listing the folders, marks platforms that engine
+      cannot run, links to the library in the player, and lists the folders again when the engine is
+      changed.
+  19. Only real game files count: a folder's ROM extensions plus zip and 7z. Readme files, cover
+      art, saves and patches dropped into a folder no longer appear as games.
+  20. Two files with the same title (game.nes and game.zip) show their type in the library.
+  21. NostalgistMod requests cores with the same address as EmulatorJSMod (with ?v=), so both
+      engines and the prefetch share one cached download.
+
+====================================================================================================
+ADDENDUM (ROUND 7): PICTURE-SIZED RENDER BUFFER FOR GRAPHICS EFFICIENCY
+====================================================================================================
+
+One change to EmulatorJSMod (data/src/performance.js), on by default
+  1. What it changes: RetroArch makes its drawing buffer as large as the canvas box. EmulatorJS made
+     that box the whole player area, black bars included, at the screen's full pixel density. A
+     256×224 SNES game in a 1000×555 player on a 2× (Retina / high-DPI) screen was drawn into a
+     2000×1112 buffer: 2.2 million pixels per frame, about a third of them black bars. Now the
+     canvas box is exactly the game's picture, and on screens with enough pixels the buffer is a
+     whole multiple of the game's own lines (×3 or more). The browser's compositor scales that
+     buffer the last step to the picture size.
+  2. Measured (Chrome, SNES at 60 fps): 1× screen 1000×555 buffer → 740×555 (26% fewer pixels); 2×
+     screen 2000×1112 → 1195×896 (52% fewer); 1920×1080 window with the NES test ROM 1920×882 →
+     878×672 (65% fewer). A 4K full screen drops from about 8.3 to 5.4 million pixels per frame for
+     a 224-line game.
+  3. Why it is faster: every frame RetroArch clears, draws and presents fewer pixels, the WebGL
+     buffer uses less video memory, and the browser has less to copy to the screen. This matters
+     most on laptops and phones with high-density screens, integrated graphics, 4K monitors and full
+     screen.
+  4. How the picture looks: the black bars are drawn by the page instead of the game. With the
+     whole-number step, every game pixel is the same size (no uneven rows or shimmer when the screen
+     scrolls); the browser's final smooth step of at most about 1.33× softens edges very slightly.
+     When the picture has fewer than three screen pixels per game line, the buffer keeps full
+     resolution and only the bars are removed, so a small player on a 1× screen looks exactly as
+     before.
+  5. Follows the game: the layout is recalculated when the player is resized, on full screen, when
+     the game changes resolution (menus, hi-res and interlaced modes, PAL/NTSC) and when the video
+     rotation changes.
+  6. Works with the other performance features: render resolution and performance mode scale this
+     smaller buffer further (performance mode on a 2× screen gives ×3 lines, 896×672).
+  7. Kept at full size where it matters: with a shader chosen the buffer keeps every screen pixel of
+     the picture (CRT and scanline shaders need them; the bars are still left out); mouse and light-
+     gun cores keep the original canvas so pointer positions stay exact.
+  8. Where to see it: Shift+F10 stats show a new Buffer line, e.g. "picture only, x4 lines, 52%
+     fewer pixels than 2000×1112"; the F1 panel's Performance section shows the same and has a
+     "Picture-sized render buffer" switch (saved per game) to compare with the old behaviour.
+     Screenshots work as before.
+
+====================================================================================================
+ADDENDUM (ROUND 8): LEAN OPAQUE GAME SURFACE FOR GRAPHICS EFFICIENCY
+====================================================================================================
+
+One change to EmulatorJSMod (data/src/performance.js), on by default
+  1. What it changes: the WebGL surface the game is drawn on is now created opaque (alpha off) and,
+     for 2D cores, without the depth and stencil buffers. EmulatorJS created it the WebGL default
+     way: transparent (alpha on, premultiplied), plus a 24-bit depth and an 8-bit stencil buffer the
+     size of the screen surface.
+  2. Why the transparent surface cost work: the browser had to treat the game as a see-through layer
+     and blend every pixel of it with the page below, every frame. An opaque layer is simply copied,
+     and Chrome, Edge and Safari can hand an opaque canvas to the GPU's hardware overlay (direct
+     scan-out), skipping the page compositing step completely in full screen.
+  3. Why depth and stencil were waste: NES, SNES, Game Boy, Game Boy Color, Game Gear, Atari 2600
+     and every other 2D core draws its finished picture as one flat image; RetroArch's menu and
+     shaders work in their own buffers. The two buffers cost 4 bytes of video memory per pixel: 4.3
+     MB at 1195×896, 8.9 MB at the old full-player 2000×1112, about 21 MB in 4K full screen, all
+     freed. They no longer have to be resolved or cleared each frame either.
+  4. 3D cores keep both buffers: Nintendo 64 (mupen64plus_next, parallel_n64), PSP, DS, Dreamcast,
+     Saturn, 3DS, hardware PlayStation renderers and DOS, plus any core whose name ends in _hw or
+     gl. A site owner can keep them for every core by setting keepDepthBuffer: true in the
+     EmulatorJS config.
+  5. Measured (Chrome with software graphics, SNES with the CRT Easymode shader at 2× density, the
+     heaviest case available here, two runs each): 16.1 fps with the old surface, 16.9 fps with the
+     lean one, about 5% faster with nothing else changed. Without a shader both run at a full 60
+     fps; on a real graphics chip the gain shows as lower GPU load and power use rather than higher
+     fps.
+  6. Nothing looks different: the game picture, shaders, screenshots, save states and the black bars
+     around the picture are unchanged (checked by reading back screenshots with and without a
+     shader).
+  7. Where to see it: Shift+F10 stats have a new Surface line, e.g. "opaque, no depth/stencil (2D
+     core)" or "depth/stencil kept (3D core)"; the F1 panel's Performance section shows it too and
+     has a "Lean opaque game surface" switch (saved per game, applies from the next start) to
+     compare with the old surface.
+
+====================================================================================================
+ADDENDUM (ROUND 9): OBSOLETEMOD AND THE LINKS PAGE
+====================================================================================================
+
+ObsoleteMod added to the site (obsoletemod/)
+--------------------------------------------
+  1. The ObsoleteMod project ("Emu", a seven-system retro game shelf with ten library views,
+     folder/ZIP/ROM import, ROM asset export, touch controls, state saves and its own emulator
+     configuration page) is now part of the site, in its own folder with its pages, styles and data
+     files unchanged apart from the items below.
+  2. It runs on this site's EmulatorJSMod engine and the .7z cores in data/cores instead of the
+     EmulatorJS CDN and its old .data core copies, so it works on GitHub Pages without any outside
+     request and gets the F1 hotkeys, save slots and performance features (picture-sized buffer,
+     lean surface and the rest).
+  3. JSZip (used for ZIP imports and the asset export) is served from
+     obsoletemod/vendor/jszip.min.js instead of esm.sh; Google Fonts were removed and the styles
+     fall back to system fonts. Both outside requests would also have been blocked by the cross-
+     origin isolation the site uses for threads.
+  4. A SITE button in ObsoleteMod's header and on its ROM links page leads back to the site's Links
+     page.
+  5. Its ROM files are not shipped with the site download; obsoletemod/roms/<system>/ keeps the
+     folders and roms/manifest.json and the catalogues keep listing the games, so copying the files
+     back restores the library.
+
+Links page
+----------
+  6. New links.html: one page with every part of the site: EmulatorJS home, the game library in the
+     player, ObsoleteMod, ObsoleteMod's configuration, ROM links and readme, ENHANCEMENTS.txt and
+     the README.
+  7. Reached from a Links link on the home page (next to "What's changed") and a Links button next
+     to Home on the game page.
+
+Engine fix found while adding ObsoleteMod
+-----------------------------------------
+  8. data/loader.js can now be loaded again on the same page. Pages that play several games without
+     reloading (ObsoleteMod opens and closes its player) inject the loader once per game; the second
+     time the browser stopped it with "already declared" errors, and the next game never started.
+     The loader now runs in its own block.
+
+====================================================================================================
+ADDENDUM (ROUND 10): REFERENCE DOCS VIEWER
+====================================================================================================
+
+Reference docs (reference-docs/, reference.html)
+------------------------------------------------
+  1. The supplied reference documents are part of the site: 144 Markdown pages in reference-docs/,
+     one for every file of the project in the same folder layout, plus a project overview (00), an
+     asset index (01) and a ROM evaluation (02).
+  2. New viewer page reference.html: shows any document as a formatted page (tables, code blocks,
+     headings), with a side list of all documents grouped by folder, a filter box (press / to jump
+     to it; several words narrow the list, e.g. "nostalgist classes"), and Overview and Asset index
+     buttons. On narrow screens the list opens from a Documents button.
+  3. Links between documents open in place and the address changes with them
+     (reference.html?doc=assets/app.js.md), so Back and Forward work and any page can be bookmarked
+     or shared; links to headings (#data) jump to them. Only documents in the list can be opened.
+  4. Everything is local: Markdown is rendered with a copy of marked (assets/vendor/marked.esm.js,
+     MIT) and cleaned with DOMPurify (assets/vendor/purify.es.mjs, Apache-2.0 or MPL-2.0) before it
+     is shown. The service worker now also keeps .md files, so the docs open offline after a first
+     visit.
+  5. tools/generate-reference-index.mjs writes reference-docs/files.json (the list the viewer reads,
+     since GitHub Pages cannot list folders); the GitHub workflow runs it on every push that changes
+     the docs, and npm run index runs it too.
+
+Links to it
+-----------
+  6. Home page: a third link, "Reference docs", next to "What's changed from the original
+     EmulatorJS" and "Links".
+  7. Links page: a third entry in Documents, after ENHANCEMENTS.txt and the README.
+
+====================================================================================================
+ADDENDUM (ROUND 11): PHONE AND IPHONE VIEW
+====================================================================================================
+
+A separate layout for phones that adapts to the device (assets/mobile.js)
+  1. The site works out what it is running on (touch screen, phone or small tablet, iPhone/iPad,
+     Android, opened from the home screen) and switches to a phone layout on touch devices whose
+     short side is up to 820 px. Browser mode in the home page options now also chooses the layout
+     (Auto, Desktop, Mobile), and ?view=phone|desktop|auto overrides it for one visit.
+  2. Rotation is followed live: the page knows portrait from landscape, re-measures after iOS
+     settles the new size, and lays the game out again for the new shape without reloading or
+     interrupting play.
+  3. The visible height is measured from the visual viewport, so Safari's toolbars no longer push
+     the bottom of the game or the controls off screen; notches, rounded corners and the home
+     indicator are kept clear with safe-area insets on every page.
+
+Game page on a phone
+--------------------
+  4. Portrait: a slim bar (Home, game title, menu button), the game picture directly below it at
+     full width, and the touch controls in the lower half, so neither covers the other, like a
+     handheld.
+  5. Landscape: the bar disappears and the game gets the whole screen, centred between the controls;
+     a small translucent handle at the top opens the menu.
+  6. Game menu sheet (menu button or handle, swipe down or tap outside to close): pauses the game
+     while open and resumes it when closed; it holds the Platform, Game and Engine choices, quick
+     actions (EmulatorJSMod: save state, load state, undo load, reset, screenshot, fast forward;
+     NostalgistMod: its toolbar), an on-screen controls switch, Full screen on Android, and links to
+     Home, Library, Links and Docs.
+  7. No accidental zooming or pop-ups while playing: pinch, double-tap zoom, long-press callouts,
+     text selection and page bounce are switched off over the game, while quick repeated button taps
+     still register.
+  8. iPhone: Safari has no full-screen mode for web pages, so the menu explains Add to Home Screen
+     once (dismissible); the pages carry the iOS web-app tags, so the site opens from the home-
+     screen icon full screen with a dark status bar.
+
+NostalgistMod on touch screens (assets/touch-pad.js)
+----------------------------------------------------
+  9. A new on-screen controller (NostalgistMod had none, so it could not be played on a phone):
+     d-pad with diagonals, face buttons matched to the system (NES and Game Boy B/A, SNES Y/X/B/A
+     with L/R, Game Gear 1/2, Mega Drive A/B/C, Atari 2600 Fire, N64 A/B/Z/L/R), Select and Start.
+  10. Real multi-touch: every finger is tracked separately and can slide from one button to the next
+      or around the d-pad; buttons light up while held, Android devices give a short vibration, and
+      everything is released when the tab is hidden or the menu opens.
+  11. It sits below the picture in portrait and at the sides in landscape, hides itself while a
+      physical controller is connected, and can be switched off in the menu (remembered).
+
+Picture fixes found while testing on phones
+-------------------------------------------
+  12. Some phone browsers give RetroArch a drawing buffer in CSS pixels instead of device pixels.
+      EmulatorJSMod's picture-sized buffer now measures the unit RetroArch really uses and sizes the
+      canvas in it, so the picture is sharp and correctly placed on those phones as well (before,
+      the buffer could end up a third of the intended resolution).
+  13. NostalgistMod no longer sets its own buffer size, which on such phones put the picture in one
+      corner of the screen; RetroArch sizes it from the canvas box after every layout change, on
+      phones and on desktops alike.
+
+Home page and other pages on a phone
+------------------------------------
+  14. Home: a bottom bar with Open file, Library, Recent and Links; "Tap to open a game file"
+      instead of the drop text; larger rows, game tiles in two columns (three in landscape); a
+      compact header in landscape; no help badges in the link row; 16 px fields so iOS does not zoom
+      when a field is tapped.
+  15. The game library in the player, the Links page and the reference docs viewer use the same
+      phone layout, safe areas and touch sizes.
+
+====================================================================================================
+ADDENDUM (ROUND 12): IDLE AUDIO SUSPENSION FOR AUDIO EFFICIENCY
+====================================================================================================
+
+One change to EmulatorJSMod (data/src/performance.js, plus a pause/play event in
+data/src/emulator.js), on by default
+  1. What it changes: RetroArch plays sound through a WebAudio context (Emscripten's OpenAL).
+     EmulatorJS created it once and left it running for the whole session, so the browser's audio
+     thread and the device's audio output kept working at full rate (44.1 or 48 kHz, hundreds of
+     wake-ups a second) even when the emulator had stopped producing sound. Now the context is
+     suspended whenever no sound can come out, and resumed when play continues.
+  2. When it suspends: the game is paused (F5, the F1 panel, the phone game menu, auto-pause when a
+     controller disconnects) or the tab or app is in the background. It does not suspend while a
+     game runs muted, because RetroArch then still feeds the audio queue and would wait for room.
+  3. Why sound comes back cleanly: the context is suspended, not closed, so the sound already queued
+     is kept and playback continues from the same point. There is no skip, no burst of queued sound
+     and no new audio setup on resume.
+  4. Measured (headless Chrome, SNES game paused for 10 seconds, three runs each): the browser used
+     45 to 50 units of CPU time with the context suspended against 55 to 58 with it running, about
+     18% less while paused, and the audio clock stopped advancing (0.00 s instead of 3.00 s over 3
+     seconds). On real hardware the larger saving is that the audio device can go idle, which most
+     matters for laptops and phones on battery.
+  5. iPhone and iPad: Safari stops audio during calls, Siri or when you switch apps (the
+     "interrupted" state) and the old code never restarted it, so the game came back silent. When
+     the game is visible and running again the context is resumed, and if Safari needs a tap first,
+     the next tap or key press brings the sound back.
+  6. Where to see it: Shift+F10 stats have a new Audio line, for example "44100 Hz, suspended
+     (paused), idle audio stopped for 3 s", and the F1 panel's Performance section has a "Stop audio
+     processing while paused or hidden" switch (saved per game) to compare with the old behaviour.
+     Pausing and resuming, save and load states, fast forward and mute work as before.
+
+====================================================================================================
+ADDENDUM (ROUND 13): SAVE SLOT PICKER WITH PICTURES
+====================================================================================================
+
+One change to EmulatorJSMod (data/src/enhancements.js), available in every game
+  1. What it changes: the nine quick-save slots were invisible. You chose one by pressing F3 and
+     reading a one-line message ("SAVE SLOT 4 (USED)"), with no way to see what a slot held, when it
+     was saved, or to clear it. Now Shift+F2 opens a save slot picker over the game: all nine slots
+     as cards with a picture of the game at the moment it was saved, how long ago that was, and
+     which slot F2 and F4 use (marked with a star).
+  2. Pictures: every save into a slot (F2, the controller's Select+R1, the phone menu, the picker
+     itself) stores a small JPEG of that moment next to the slot, about 8 KB for a SNES picture,
+     kept in the browser with the save. Older saves made before this change show "No picture" until
+     they are saved again.
+  3. Everything in one place: Save here (or save over), Load, Delete, Close. The slot you pick also
+     becomes the F2 / F4 slot, so quick save and quick load keep working on it afterwards. Tapping a
+     card selects it; tapping the selected card again loads it (or saves into it when empty).
+  4. Keyboard: arrow keys move, 1 to 9 jump to a slot, Enter loads (saves into an empty slot), S
+     saves, L loads, Delete removes, Esc or Shift+F2 closes. Controller: Select+Up opens it, the
+     d-pad moves, A loads, X saves, Y deletes, B closes. While it is open the keys and buttons drive
+     the picker, not the game.
+  5. The game pauses while the picker is open and continues when it closes (unless you loaded a
+     slot, which resumes from that slot). Its last frame is kept so a save made from the picker
+     still gets a correct picture even though the game is paused.
+  6. It fits the screen without scrolling: three slots across in portrait and on desktop, five
+     across on wide landscape screens such as a phone held sideways, re-laid out when the screen
+     rotates or the window is resized; on touch screens the buttons are finger-sized and the phone's
+     on-screen gamepad is hidden behind it.
+  7. Where to find it: Shift+F2 in game, Select+Up on a controller, "Save slots… (Shift+F2)" in the
+     F1 panel, and "Save slots" in the phone game menu. F1's hotkey list includes the new keys.
+
+====================================================================================================
+ADDENDUM (ROUND 14): IPHONE AND MOBILE REVIEW
+====================================================================================================
+
+Fixes and improvements from a full pass over the site on phones (emulated iPhone SE, iPhone 15 and
+15 Pro Max, Android, portrait, landscape and rotating while playing, with real multi-touch input)
+  1. Landscape on small phones (iPhone SE): the game picture ran under the on-screen d-pad and
+     buttons in both engines. It is now fitted between them and centred, so the whole picture stays
+     visible; on wider phones nothing changes.
+  2. ObsoleteMod on phones: its page stylesheet limited the game canvas size, which shrank the
+     picture to a quarter in a corner with the picture-sized buffer; the layout now takes
+     precedence. Its header overflowed the screen on 375-pixel-wide phones (the SITE button is now
+     on its LINKS page on phones) and its filter row was 8 pixels too wide on small phones.
+  3. No layout flash: phones get the phone layout before the page is first drawn (assets/early-
+     view.js), instead of briefly showing the desktop layout.
+  4. Reference docs on phones: the header buttons now fit on one scrolling row, tables scroll
+     sideways instead of breaking words letter by letter, and long names wrap.
+  5. Engine chooser: never taller than the screen, two columns in landscape; the "can't start this
+     game" card has margins and full-width buttons.
+  6. Game menu in landscape: wider, with four tools per row and the pickers side by side, so it
+     rarely needs scrolling; the "Full screen" button is no longer shown twice on Android.
+  7. iPhone home-screen app: the web app manifest allows both orientations and has an id; the Add to
+     Home Screen tip mentions that saves are kept more reliably, and every game start asks the
+     browser to keep saves (Safari otherwise clears site data after weeks without a visit).
+  8. The "rotate your device" message no longer appears in the phone layout, where portrait is a
+     designed layout; it remains in other pages that embed the player.
+  9. Vibration on the NostalgistMod pad waits for the first tap (browsers block it before that and
+     logged an error).
+  10. Home page: game counts no longer wrap; the engine chooser text mentions the NostalgistMod
+      touch controls.
+
+Checked and working on phones: no page is wider than the screen (all pages at 375 and 430 pixels);
+touch on the on-screen controls of both engines (holding a button, two fingers at once, release),
+the game menu (tap to open pauses the game, swipe down closes and resumes), the save slot picker by
+touch (pick, save, close), rotation during play, the library, the error screen, Links, reference
+docs and ObsoleteMod.
+
+====================================================================================================
+ADDENDUM (ROUND 15): 2.5D MODE FOR NES AND SNES
+====================================================================================================
+
+2.5D view (data/src/depth25.js, EmulatorJSMod)
+----------------------------------------------
+  1. A 2.5D button on the home page (next to the engine) turns 2.5D mode on or off; it is
+     remembered, applies to NES and SNES games, and ?depth25=1 or ?depth25=0 on a game address
+     overrides it for one game. With 2.5D on, NES and SNES games always start in EmulatorJSMod,
+     which draws the effect.
+  2. How it looks: every frame is redrawn as a scene with depth. The colours that fill most of the
+     screen (the backdrop, sky bands, a checkerboard) become a dimmed far layer; everything else
+     (level tiles, platforms, characters, items, text) becomes raised blocks, one per game pixel,
+     each with a lit top face above it, a light top edge, darker right and lower edges, and a soft
+     shadow cast down and to the right onto the far layer, with shading where blocks meet it.
+  3. Backdrop colours are worked out from the picture several times a second, so the layering
+     follows the game from screen to screen without any per-game setup.
+  4. Gameplay is untouched: the emulator, timing, input, saves, screenshots (F8 saves the flat game
+     picture) and every other feature run as before; 2.5D only changes how the finished frame is
+     shown, on a second canvas laid exactly over the game.
+  5. Adjustable while playing: Shift+F8 switches between 2.5D and the flat picture, and the F1 panel
+     has a 2.5D section with Block height, Shadows, Background brightness and Highlights sliders,
+     saved per game. The phone game menu has a "2.5D view" switch.
+  6. Keeps the game at full speed: the effect is computed in two GPU passes (one at the game's own
+     resolution, one on screen). If frames start taking longer than the screen's refresh, it draws
+     with fewer pixels (4, 3, then 2 per game pixel) and remembers the level for that device.
+  7. Limits: the depth is worked out from colours, not from the game's own layers (a browser
+     emulator cannot see those), so it does not reproduce hand-made 3D remakes of particular games.
+     Games with a plain backdrop (most NES games) show the clearest layering; very detailed SNES
+     backgrounds are partly raised along with the foreground; the sliders tune the result per game.
+
+====================================================================================================
+ADDENDUM (ROUND 16): SYSTEM AND CORE CHOSEN BEFORE A GAME FILE OPENS
+====================================================================================================
+
+Why: opening a zip with an N64 game could start it as an arcade game on the wrong core (FinalBurn
+Alpha 2012 CPS-1). Three things caused it: a zip was treated as arcade whenever its contents could
+not be read by name; the system picker remembered one answer per file type ("Remember for this file
+type" was ticked by default), so after one arcade zip every later zip went to arcade without asking;
+and a 7z was always taken for arcade.
+
+  1. Load game dialog: every ROM or zip opened on the home page (drop, file picker, Open file on
+     phones) now shows the system it was detected as, how it was detected, and the emulator core
+     that will run it, before anything starts. Both can be changed; Start game opens it, Cancel
+     stops. When the system can't be told, the dialog asks for it and Start game waits until one is
+     chosen.
+  2. Zips are read properly: the dialog looks inside the zip, decompresses the start of the largest
+     file and checks its header, so an N64, NES, SNES, Game Boy, GBA, Mega Drive, Master System/Game
+     Gear, Lynx or 7800 game is recognised even when the file inside has an odd name such as
+     rom.bin; readme, picture and save files in the zip are ignored. File types inside the zip are
+     the fallback.
+  3. Archives are never assumed to be arcade: a zip or 7z whose contents can't be identified asks
+     for the system instead of picking arcade.
+  4. The old per-file-type answers ("every .zip is arcade") are deleted on the first visit after
+     this update.
+  5. Core choice: the dialog lists the cores installed for the system (the default first) with a
+     short note on each (for example "Mupen64Plus-Next: best compatibility", "FinalBurn Alpha 2012:
+     Capcom CPS-1 arcade boards only"), and marks cores that need threads or that NostalgistMod
+     cannot run. "Use this core for every <system> game" remembers the choice; it is then also used
+     for games opened from the library folders, the player's library and links.
+  6. The chosen core really is used: it is stored with the game in Recent games and passed to the
+     engine, and it takes priority over a core saved earlier in the EmulatorJS settings menu (which
+     previously overrode it). play.html?url=...&core= also accepts a core name (for example
+     &core=parallel_n64) as well as a system.
+  7. Threads follow the chosen core: a core that needs threads is only required when that core is
+     picked.

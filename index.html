@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>EmulatorJS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#111418">
+    <meta name="description" content="Play your own ROM files in the browser. Everything runs locally.">
+    <link rel="icon" href="docs/favicon.ico" sizes="16x16 32x32 48x48 64x64" type="image/vnd.microsoft.icon">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="EmulatorJS">
+    <meta name="format-detection" content="telephone=no">
+    <link rel="apple-touch-icon" href="docs/Logo.png">
+    <link rel="manifest" href="manifest.webmanifest">
+    <script src="assets/early-view.js"></script>
+    <link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+    <div id="banners" aria-live="polite"></div>
+    <script>
+        // Browsers block modules and file reads on file:// pages, so explain instead of hanging on "Loading cores…"
+        if (location.protocol === "file:") {
+            document.addEventListener("DOMContentLoaded", function () {
+                var s = document.getElementById("status");
+                s.innerHTML = "<strong>This page must be opened through a local web server, not as a file.</strong><br>" +
+                    "On Windows, double-click <code>start-windows.bat</code> in this folder. " +
+                    "Elsewhere run <code>python3 serve.py 8000</code> and open <code>http://localhost:8000</code>.";
+                s.style.cssText = "color:#ffcf8a;background:#3a2f1c;border:1px solid #6b5531;border-radius:8px;padding:10px;margin-top:10px";
+            });
+        }
+    </script>
+    <main id="menu">
+        <header>
+            <img class="logo" src="docs/Logo-light.png" alt="" width="88" height="88">
+            <h1>EmulatorJS</h1>
+            <p id="status" class="muted">Loading cores…</p>
+            <p id="engineInfo" class="small" data-tip="Shows which emulation engine will run the games you open: EmulatorJSMod (the full EmulatorJS player) or NostalgistMod (a lightweight player built on Nostalgist.js). Both use the same local cores in data/cores, so games and saves stay on this site. Use Change to switch; the game page also has an Engine dropdown that restarts the current game with the other engine.">Engine: <strong id="engineName">not chosen</strong> <button type="button" id="changeEngine">Change</button></p>
+            <p class="depth25-line" data-tip="Turns 2.5D mode on or off for NES and SNES games. The game is redrawn with depth: level tiles, platforms and characters become raised blocks with lit tops, bevelled edges and shadows, in front of a dimmed background. Gameplay is unchanged; in game Shift+F8 switches the view and F1 has sliders for block height, shadows and background brightness."><button type="button" id="depth25Btn" class="depth25-btn" aria-pressed="false" aria-describedby="depth25Note"><span class="depth25-label">2.5D</span><span class="depth25-state">Off</span></button> <span id="depth25Note" class="small muted">NES and SNES games</span></p>
+            <p class="small"><a href="ENHANCEMENTS.txt" target="_blank" rel="noopener" data-tip="Opens a plain-text document listing every change this version makes to the original EmulatorJS. It covers the efficiency rewrite, the 50 player-facing enhancements, the 50 engine fixes, the game library and the second engine, NostalgistMod. Read it to see exactly what behaves differently and why.">What's changed from the original EmulatorJS</a> · <a href="links.html" data-tip="Opens the Links page with every part of this site in one place. From there you can start ObsoleteMod, the Emu retro game shelf, as well as the game library and the documents. Use it when you want a different player or a quick way to the reference pages.">Links</a> · <a href="reference.html" data-tip="Opens the reference docs: one explained page for every file in this project, plus a project overview, an asset index and a ROM evaluation. Each page says what the file is, how it works, why it exists and which files use it. Use the filter box to find a file by name in seconds.">Reference docs</a></p>
+        </header>
+
+        <label id="drop" for="rom" tabindex="0" data-tip="Drop a ROM file here, or click to pick one from your device. You can include a BIOS and an IPS, BPS or UPS patch in the same drop, and they are sorted out automatically. The file never leaves your device; this browser reads it directly and opens the game page.">
+            <input type="file" id="rom" multiple hidden>
+            <strong class="d-only">Drop a ROM here</strong>
+            <strong class="m-only">Tap to open a game file</strong>
+            <span class="d-only">or click to choose files. You can add a BIOS and an IPS/BPS/UPS patch in the same drop.</span>
+            <span class="muted small">Files stay on this device; nothing is uploaded.</span>
+        </label>
+
+
+        <section id="foldersSection" class="card" hidden>
+            <h2 data-tip="Games stored on this site in the data folder, grouped by console (A2600, GB, GBC, GG, NES, SNES and N64). Click a game to open it on the game page with the right emulator already chosen. Add ROMs or zips to those folders to make them appear here.">Game library</h2>
+            <p id="foldersSummary" class="muted small"></p>
+            <div id="folders"></div>
+        </section>
+
+        <section id="recentSection" class="card" hidden>
+            <h2 data-tip="Games you started recently, newest first, with system, last played time and play time. Play reopens a game with one click, including any BIOS or patch you used with it. The ✕ button removes a game from this list and deletes its stored copy from this browser.">Recent games</h2>
+            <ul id="recent"></ul>
+        </section>
+
+        <details id="advanced" class="card">
+            <summary>Options</summary>
+            <div class="row" data-tip="Chooses which console runs the next file you open. Leave it on Auto-detect to use the file extension, the file header or the names inside a zip. Pick a system yourself when a file is detected wrongly or uses an unusual extension.">
+                <label for="system">System</label>
+                <select id="system"><option value="">Auto-detect</option></select>
+            </div>
+            <div class="row" data-tip="Some consoles need the original system firmware (BIOS) to boot, for example PlayStation or Sega CD. Choose that file here and it is loaded with the next game you start, and remembered with it in Recent games. Systems that don't need a BIOS simply ignore it.">
+                <label for="bios">BIOS file</label>
+                <input type="file" id="bios">
+            </div>
+            <div class="row" data-tip="Applies a ROM hack, translation or bug-fix patch in IPS, BPS or UPS format when the game starts. The original ROM file is not changed; the patch is applied in memory every time the game loads. Use a patch made for your exact ROM version, or the game may not run correctly.">
+                <label for="patch">Patch (IPS / BPS / UPS)</label>
+                <input type="file" id="patch" accept=".ips,.bps,.ups">
+            </div>
+            <div class="row" data-tip="Runs parts of the emulator on extra CPU cores using multi-threaded core builds. PSP and DOS always need it, and it can make other demanding systems run more smoothly. It needs https or localhost and becomes available after the page reloads itself once on your first visit.">
+                <label><input type="checkbox" id="threads" data-remember> Threads</label> <span id="threadsNote" class="muted"></span>
+            </div>
+            <div class="row" data-tip="Keeps downloaded cores and games in your browser's storage so the next start is much faster. It also lets games you have played before start without a network connection. Turn it off to save disk space, and use Clear download cache below to empty what is already stored.">
+                <label><input type="checkbox" id="cache" checked data-remember> Cache cores and games</label>
+            </div>
+            <div class="row" data-tip="Remembers the games you start so they appear under Recent games for one-click play. Files from your device are stored in this browser only and are never uploaded. When it is off, only the game you are currently playing is kept, so the game page can still reload it.">
+                <label><input type="checkbox" id="library" checked data-remember> Keep recent games for one-click play</label>
+            </div>
+            <div class="row" data-tip="Writes detailed emulator logs to the browser's developer console. It helps track down why a game or core fails to start. Leave it off for normal play, because the extra logging can slow things down slightly.">
+                <label><input type="checkbox" id="debug" data-remember> Debug mode</label>
+            </div>
+            <div class="row" data-tip="Chooses between the phone layout with on-screen touch controls and the desktop layout. Auto picks the phone layout on phones and small tablets, which follows rotation and keeps the game and controls in view. Choose Desktop or Mobile if a tablet or touch laptop gets the wrong one.">
+                <span>Browser mode</span>
+                <label><input type="radio" name="mode" value="" checked> Auto</label>
+                <label><input type="radio" name="mode" value="desktop"> Desktop</label>
+                <label><input type="radio" name="mode" value="mobile"> Mobile</label>
+            </div>
+            <hr>
+            <div class="row">
+                <span>Saves</span>
+                <span data-tip="Saves all in-game saves, save states and emulator settings from this browser into one .json file. Use it to keep a safe copy or to move your progress to another browser or device. ROM files are not included, so the backup stays small."><button type="button" id="exportSaves">Export backup</button></span>
+                <span data-tip="Restores a backup file made with Export backup. Saves and states with the same names are replaced by the ones in the file, and everything else is kept. Close other tabs running the emulator first so the import isn't blocked."><label class="button" for="importSaves">Import backup</label></span>
+                <input type="file" id="importSaves" accept=".json,application/json" hidden>
+            </div>
+            <div class="row" data-tip="Shows how much browser storage this site uses and how much is available on this device. Clear download cache removes downloaded cores and cached game copies to free space. Your saves, save states and recent games are kept.">
+                <span id="storageInfo" class="muted">Storage: …</span>
+                <button type="button" id="clearCache">Clear download cache</button>
+            </div>
+            <p class="muted small">Hotkeys in game: press <kbd>F1</kbd> for the full list (quick save <kbd>F2</kbd>, load <kbd>F4</kbd>, pause <kbd>F5</kbd>, fast forward <kbd>F6</kbd>). Hover or tap <span class="tip-badge static">?</span> for help on each option.</p>
+        </details>
+    </main>
+    <nav id="tabbar" aria-label="Quick actions">
+        <button type="button" id="tabOpen"><span class="tab-icon" aria-hidden="true">&#xFF0B;</span>Open file</button>
+        <a href="play.html" id="tabLibrary"><span class="tab-icon" aria-hidden="true">&#9638;</span>Library</a>
+        <button type="button" id="tabRecent"><span class="tab-icon" aria-hidden="true">&#8635;</span>Recent</button>
+        <a href="links.html"><span class="tab-icon" aria-hidden="true">&#9776;</span>Links</a>
+    </nav>
+    <dialog id="loadDialog" aria-labelledby="loadTitle">
+        <form method="dialog" id="loadForm">
+            <h2 id="loadTitle">Load game</h2>
+            <p id="loadFile" class="load-file"></p>
+            <p id="loadDetected" class="small"></p>
+            <label class="load-row" for="loadSystem">System</label>
+            <select id="loadSystem" required></select>
+            <label class="load-row" for="loadCore">Emulator core</label>
+            <select id="loadCore"></select>
+            <p id="loadCoreNote" class="muted small"></p>
+            <label class="small load-remember"><input type="checkbox" id="loadRemember"> <span>Use this core for every <span id="loadSystemName">game of this system</span></span></label>
+            <div class="buttons load-buttons">
+                <button type="submit" id="loadStart" value="start" class="primary">Start game</button>
+                <button type="button" id="loadCancel">Cancel</button>
+            </div>
+        </form>
+    </dialog>
+    <dialog id="engineDialog" aria-labelledby="engineTitle">
+        <h2 id="engineTitle">Choose an emulation engine</h2>
+        <p class="muted small">Both engines run the same local cores. You can switch any time from this page or from the game page.</p>
+        <div id="engineCards" class="engine-cards"></div>
+        <label class="small"><input type="checkbox" id="rememberEngine"> Remember my choice and don't ask again</label>
+    </dialog>
+    <script type="module" src="assets/app.js"></script>
+</body>
+</html>

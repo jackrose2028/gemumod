@@ -1,0 +1,23 @@
+{
+    "name": "emulatorjs-local",
+    "version": "4.3.0-local",
+    "type": "module",
+    "private": true,
+    "description": "EmulatorJS served entirely from local files (GitHub Pages ready).",
+    "license": "GPL-3.0",
+    "scripts": {
+        "start": "python3 serve.py 8000",
+        "manifest": "node tools/generate-core-manifest.mjs",
+        "minify": "node minify/minify.js",
+        "build:nostalgist": "node tools/nostalgist-mod/build.mjs",
+        "index": "node tools/generate-rom-index.mjs && node tools/generate-reference-index.mjs"
+    },
+    "devDependencies": {
+        "@node-minify/clean-css": "^10.4.0",
+        "@node-minify/core": "^10.4.0",
+        "@rollup/plugin-terser": "^1.0.0",
+        "rollup": "^4.59.0",
+        "esbuild": "^0.28.0",
+        "ini": "^5.0.0"
+    }
+}

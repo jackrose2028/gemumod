@@ -1,0 +1,20 @@
+{
+    "id": "./",
+    "name": "EmulatorJS",
+    "short_name": "EmulatorJS",
+    "description": "Play your own ROM files in the browser.",
+    "start_url": "./",
+    "scope": "./",
+    "display": "standalone",
+    "orientation": "any",
+    "background_color": "#111418",
+    "theme_color": "#111418",
+    "icons": [
+        {
+            "src": "docs/Logo.png",
+            "sizes": "500x500",
+            "type": "image/png",
+            "purpose": "any"
+        }
+    ]
+}
