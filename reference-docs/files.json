@@ -1,0 +1,724 @@
+{
+ "files": [
+  {
+   "path": "00-PROJECT-OVERVIEW.md",
+   "title": "EmulatorJS (local edition): project overview",
+   "size": 5396
+  },
+  {
+   "path": "01-INDEX.md",
+   "title": "Asset index",
+   "size": 23383
+  },
+  {
+   "path": "02-ROM-EVALUATION-GameEvauationTestGame.md",
+   "title": "ROM evaluation: GameEvauationTestGame.sfc",
+   "size": 24892
+  },
+  {
+   "path": ".gitattributes.md",
+   "title": ".gitattributes",
+   "size": 591
+  },
+  {
+   "path": ".github/workflows/update-indexes.yml.md",
+   "title": "update-indexes.yml",
+   "size": 1214
+  },
+  {
+   "path": ".gitignore.md",
+   "title": ".gitignore",
+   "size": 670
+  },
+  {
+   "path": ".nojekyll.md",
+   "title": ".nojekyll",
+   "size": 583
+  },
+  {
+   "path": "assets/app.css.md",
+   "title": "app.css",
+   "size": 850
+  },
+  {
+   "path": "assets/app.js.md",
+   "title": "app.js",
+   "size": 1626
+  },
+  {
+   "path": "assets/backup.js.md",
+   "title": "backup.js",
+   "size": 978
+  },
+  {
+   "path": "assets/common.js.md",
+   "title": "common.js",
+   "size": 1616
+  },
+  {
+   "path": "assets/detect.js.md",
+   "title": "detect.js",
+   "size": 1407
+  },
+  {
+   "path": "assets/folders.js.md",
+   "title": "folders.js",
+   "size": 1131
+  },
+  {
+   "path": "assets/library.js.md",
+   "title": "library.js",
+   "size": 1111
+  },
+  {
+   "path": "assets/nostalgist-player.js.md",
+   "title": "nostalgist-player.js",
+   "size": 1312
+  },
+  {
+   "path": "assets/play.js.md",
+   "title": "play.js",
+   "size": 1529
+  },
+  {
+   "path": "assets/tooltips.js.md",
+   "title": "tooltips.js",
+   "size": 802
+  },
+  {
+   "path": "CHANGES.md.md",
+   "title": "CHANGES.md",
+   "size": 874
+  },
+  {
+   "path": "data/A2600/index.json.md",
+   "title": "index.json",
+   "size": 718
+  },
+  {
+   "path": "data/A2600/README.txt.md",
+   "title": "README.txt",
+   "size": 937
+  },
+  {
+   "path": "data/compression/extract7z.js.md",
+   "title": "extract7z.js",
+   "size": 1050
+  },
+  {
+   "path": "data/compression/extractzip.js.md",
+   "title": "extractzip.js",
+   "size": 607
+  },
+  {
+   "path": "data/compression/libunrar.js.md",
+   "title": "libunrar.js",
+   "size": 616
+  },
+  {
+   "path": "data/compression/libunrar.wasm.md",
+   "title": "libunrar.wasm",
+   "size": 595
+  },
+  {
+   "path": "data/cores/manifest.json.md",
+   "title": "manifest.json",
+   "size": 1307
+  },
+  {
+   "path": "data/cores/README.md.md",
+   "title": "README.md",
+   "size": 581
+  },
+  {
+   "path": "data/emulator.css.md",
+   "title": "emulator.css",
+   "size": 920
+  },
+  {
+   "path": "data/GB/index.json.md",
+   "title": "index.json",
+   "size": 712
+  },
+  {
+   "path": "data/GB/README.txt.md",
+   "title": "README.txt",
+   "size": 920
+  },
+  {
+   "path": "data/GBC/index.json.md",
+   "title": "index.json",
+   "size": 714
+  },
+  {
+   "path": "data/GBC/README.txt.md",
+   "title": "README.txt",
+   "size": 934
+  },
+  {
+   "path": "data/GG/index.json.md",
+   "title": "index.json",
+   "size": 712
+  },
+  {
+   "path": "data/GG/README.txt.md",
+   "title": "README.txt",
+   "size": 936
+  },
+  {
+   "path": "data/loader.js.md",
+   "title": "loader.js",
+   "size": 1451
+  },
+  {
+   "path": "data/localization/ar.json.md",
+   "title": "ar.json",
+   "size": 750
+  },
+  {
+   "path": "data/localization/bn.json.md",
+   "title": "bn.json",
+   "size": 753
+  },
+  {
+   "path": "data/localization/de.json.md",
+   "title": "de.json",
+   "size": 750
+  },
+  {
+   "path": "data/localization/el.json.md",
+   "title": "el.json",
+   "size": 749
+  },
+  {
+   "path": "data/localization/en.json.md",
+   "title": "en.json",
+   "size": 907
+  },
+  {
+   "path": "data/localization/es.json.md",
+   "title": "es.json",
+   "size": 752
+  },
+  {
+   "path": "data/localization/fa.json.md",
+   "title": "fa.json",
+   "size": 769
+  },
+  {
+   "path": "data/localization/fr.json.md",
+   "title": "fr.json",
+   "size": 751
+  },
+  {
+   "path": "data/localization/hi.json.md",
+   "title": "hi.json",
+   "size": 749
+  },
+  {
+   "path": "data/localization/it.json.md",
+   "title": "it.json",
+   "size": 752
+  },
+  {
+   "path": "data/localization/ja.json.md",
+   "title": "ja.json",
+   "size": 754
+  },
+  {
+   "path": "data/localization/jv.json.md",
+   "title": "jv.json",
+   "size": 754
+  },
+  {
+   "path": "data/localization/km.json.md",
+   "title": "km.json",
+   "size": 749
+  },
+  {
+   "path": "data/localization/ko.json.md",
+   "title": "ko.json",
+   "size": 895
+  },
+  {
+   "path": "data/localization/pt.json.md",
+   "title": "pt.json",
+   "size": 903
+  },
+  {
+   "path": "data/localization/retroarch.json.md",
+   "title": "retroarch.json",
+   "size": 759
+  },
+  {
+   "path": "data/localization/ro.json.md",
+   "title": "ro.json",
+   "size": 754
+  },
+  {
+   "path": "data/localization/ru.json.md",
+   "title": "ru.json",
+   "size": 753
+  },
+  {
+   "path": "data/localization/tr.json.md",
+   "title": "tr.json",
+   "size": 752
+  },
+  {
+   "path": "data/localization/ua.json.md",
+   "title": "ua.json",
+   "size": 757
+  },
+  {
+   "path": "data/localization/ur.json.md",
+   "title": "ur.json",
+   "size": 747
+  },
+  {
+   "path": "data/localization/vi.json.md",
+   "title": "vi.json",
+   "size": 758
+  },
+  {
+   "path": "data/localization/zh.json.md",
+   "title": "zh.json",
+   "size": 752
+  },
+  {
+   "path": "data/N64/index.json.md",
+   "title": "index.json",
+   "size": 714
+  },
+  {
+   "path": "data/N64/README.txt.md",
+   "title": "README.txt",
+   "size": 929
+  },
+  {
+   "path": "data/NES/index.json.md",
+   "title": "index.json",
+   "size": 714
+  },
+  {
+   "path": "data/NES/README.txt.md",
+   "title": "README.txt",
+   "size": 965
+  },
+  {
+   "path": "data/platforms.json.md",
+   "title": "platforms.json",
+   "size": 827
+  },
+  {
+   "path": "data/SNES/index.json.md",
+   "title": "index.json",
+   "size": 716
+  },
+  {
+   "path": "data/SNES/README.txt.md",
+   "title": "README.txt",
+   "size": 938
+  },
+  {
+   "path": "data/src/cache.js.md",
+   "title": "cache.js",
+   "size": 1257
+  },
+  {
+   "path": "data/src/compression.js.md",
+   "title": "compression.js",
+   "size": 874
+  },
+  {
+   "path": "data/src/consts.js.md",
+   "title": "consts.js",
+   "size": 842
+  },
+  {
+   "path": "data/src/emulator.js.md",
+   "title": "emulator.js",
+   "size": 1705
+  },
+  {
+   "path": "data/src/enhancements.js.md",
+   "title": "enhancements.js",
+   "size": 1310
+  },
+  {
+   "path": "data/src/frontend.js.md",
+   "title": "frontend.js",
+   "size": 1090
+  },
+  {
+   "path": "data/src/GameManager.js.md",
+   "title": "GameManager.js",
+   "size": 1019
+  },
+  {
+   "path": "data/src/gamepad.js.md",
+   "title": "gamepad.js",
+   "size": 883
+  },
+  {
+   "path": "data/src/license.js.md",
+   "title": "license.js",
+   "size": 574
+  },
+  {
+   "path": "data/src/netplay.js.md",
+   "title": "netplay.js",
+   "size": 1162
+  },
+  {
+   "path": "data/src/performance.js.md",
+   "title": "performance.js",
+   "size": 1198
+  },
+  {
+   "path": "data/src/setup.js.md",
+   "title": "setup.js",
+   "size": 656
+  },
+  {
+   "path": "data/src/shaders.js.md",
+   "title": "shaders.js",
+   "size": 849
+  },
+  {
+   "path": "data/src/storage.js.md",
+   "title": "storage.js",
+   "size": 880
+  },
+  {
+   "path": "data/src/utils.js.md",
+   "title": "utils.js",
+   "size": 690
+  },
+  {
+   "path": "data/src/vendor/nipplejs.js.md",
+   "title": "nipplejs.js",
+   "size": 553
+  },
+  {
+   "path": "data/src/vendor/socket.io.min.js.md",
+   "title": "socket.io.min.js",
+   "size": 642
+  },
+  {
+   "path": "data/version.json.md",
+   "title": "version.json",
+   "size": 521
+  },
+  {
+   "path": "docs/CACHING.md.md",
+   "title": "CACHING.md",
+   "size": 629
+  },
+  {
+   "path": "docs/contributors.json.md",
+   "title": "contributors.json",
+   "size": 634
+  },
+  {
+   "path": "docs/contributors.md.md",
+   "title": "contributors.md",
+   "size": 490
+  },
+  {
+   "path": "docs/emulatorjs-logo-and-type.svg.md",
+   "title": "emulatorjs-logo-and-type.svg",
+   "size": 344
+  },
+  {
+   "path": "docs/emulatorjs-type.svg.md",
+   "title": "emulatorjs-type.svg",
+   "size": 377
+  },
+  {
+   "path": "docs/favicon.ico.md",
+   "title": "favicon.ico",
+   "size": 440
+  },
+  {
+   "path": "docs/Logo-light.png.md",
+   "title": "Logo-light.png",
+   "size": 501
+  },
+  {
+   "path": "docs/Logo.png.md",
+   "title": "Logo.png",
+   "size": 489
+  },
+  {
+   "path": "docs/Logo.svg.md",
+   "title": "Logo.svg",
+   "size": 385
+  },
+  {
+   "path": "docs/old-Logo.svg.md",
+   "title": "old-Logo.svg",
+   "size": 368
+  },
+  {
+   "path": "engines/EmulatorJSMod.js.md",
+   "title": "EmulatorJSMod.js",
+   "size": 1407
+  },
+  {
+   "path": "engines/NostalgistMod.js.md",
+   "title": "NostalgistMod.js",
+   "size": 1503
+  },
+  {
+   "path": "ENHANCEMENTS.txt.md",
+   "title": "ENHANCEMENTS.txt",
+   "size": 1256
+  },
+  {
+   "path": "index.html.md",
+   "title": "index.html",
+   "size": 1459
+  },
+  {
+   "path": "LICENSE.md",
+   "title": "LICENSE",
+   "size": 922
+  },
+  {
+   "path": "manifest.webmanifest.md",
+   "title": "manifest.webmanifest",
+   "size": 842
+  },
+  {
+   "path": "minify/minify.js.md",
+   "title": "minify.js",
+   "size": 889
+  },
+  {
+   "path": "minify/README.md.md",
+   "title": "README.md",
+   "size": 545
+  },
+  {
+   "path": "package.json.md",
+   "title": "package.json",
+   "size": 1248
+  },
+  {
+   "path": "play.html.md",
+   "title": "play.html",
+   "size": 1059
+  },
+  {
+   "path": "README.md.md",
+   "title": "README.md",
+   "size": 1450
+  },
+  {
+   "path": "serve.py.md",
+   "title": "serve.py",
+   "size": 1240
+  },
+  {
+   "path": "start-windows.bat.md",
+   "title": "start-windows.bat",
+   "size": 1009
+  },
+  {
+   "path": "sw.js.md",
+   "title": "sw.js",
+   "size": 1830
+  },
+  {
+   "path": "tools/generate-core-manifest.mjs.md",
+   "title": "generate-core-manifest.mjs",
+   "size": 1317
+  },
+  {
+   "path": "tools/generate-rom-index.mjs.md",
+   "title": "generate-rom-index.mjs",
+   "size": 1262
+  },
+  {
+   "path": "tools/nostalgist-mod/build.mjs.md",
+   "title": "build.mjs",
+   "size": 802
+  },
+  {
+   "path": "tools/nostalgist-mod/LICENSE.txt.md",
+   "title": "LICENSE.txt",
+   "size": 591
+  },
+  {
+   "path": "tools/nostalgist-mod/src/classes/ejs-input-bridge.ts.md",
+   "title": "ejs-input-bridge.ts",
+   "size": 1047
+  },
+  {
+   "path": "tools/nostalgist-mod/src/classes/emulator-file-system.ts.md",
+   "title": "emulator-file-system.ts",
+   "size": 826
+  },
+  {
+   "path": "tools/nostalgist-mod/src/classes/emulator-options.ts.md",
+   "title": "emulator-options.ts",
+   "size": 856
+  },
+  {
+   "path": "tools/nostalgist-mod/src/classes/emulator.ts.md",
+   "title": "emulator.ts",
+   "size": 1133
+  },
+  {
+   "path": "tools/nostalgist-mod/src/classes/nostalgist.ts.md",
+   "title": "nostalgist.ts",
+   "size": 1239
+  },
+  {
+   "path": "tools/nostalgist-mod/src/classes/resolvable-file.ts.md",
+   "title": "resolvable-file.ts",
+   "size": 1080
+  },
+  {
+   "path": "tools/nostalgist-mod/src/constants/core-info.ts.md",
+   "title": "core-info.ts",
+   "size": 690
+  },
+  {
+   "path": "tools/nostalgist-mod/src/constants/keyboard-code-map.ts.md",
+   "title": "keyboard-code-map.ts",
+   "size": 648
+  },
+  {
+   "path": "tools/nostalgist-mod/src/constants/system.ts.md",
+   "title": "system.ts",
+   "size": 633
+  },
+  {
+   "path": "tools/nostalgist-mod/src/entries/esm.ts.md",
+   "title": "esm.ts",
+   "size": 589
+  },
+  {
+   "path": "tools/nostalgist-mod/src/entries/umd.ts.md",
+   "title": "umd.ts",
+   "size": 428
+  },
+  {
+   "path": "tools/nostalgist-mod/src/index.ts.md",
+   "title": "index.ts",
+   "size": 415
+  },
+  {
+   "path": "tools/nostalgist-mod/src/libs/cheats.ts.md",
+   "title": "cheats.ts",
+   "size": 725
+  },
+  {
+   "path": "tools/nostalgist-mod/src/libs/emscripten.ts.md",
+   "title": "emscripten.ts",
+   "size": 817
+  },
+  {
+   "path": "tools/nostalgist-mod/src/libs/emulator-utils.ts.md",
+   "title": "emulator-utils.ts",
+   "size": 793
+  },
+  {
+   "path": "tools/nostalgist-mod/src/libs/options.ts.md",
+   "title": "options.ts",
+   "size": 801
+  },
+  {
+   "path": "tools/nostalgist-mod/src/libs/path-shim.ts.md",
+   "title": "path-shim.ts",
+   "size": 619
+  },
+  {
+   "path": "tools/nostalgist-mod/src/libs/set-immediate-polyfill.ts.md",
+   "title": "set-immediate-polyfill.ts",
+   "size": 612
+  },
+  {
+   "path": "tools/nostalgist-mod/src/libs/utils.ts.md",
+   "title": "utils.ts",
+   "size": 589
+  },
+  {
+   "path": "tools/nostalgist-mod/src/libs/vendors.ts.md",
+   "title": "vendors.ts",
+   "size": 846
+  },
+  {
+   "path": "tools/nostalgist-mod/src/types/nostalgist-options.ts.md",
+   "title": "nostalgist-options.ts",
+   "size": 818
+  },
+  {
+   "path": "tools/nostalgist-mod/src/types/retroarch-command.ts.md",
+   "title": "retroarch-command.ts",
+   "size": 571
+  },
+  {
+   "path": "tools/nostalgist-mod/src/types/retroarch-config/index.ts.md",
+   "title": "index.ts",
+   "size": 475
+  },
+  {
+   "path": "tools/nostalgist-mod/src/types/retroarch-config/input-player.ts.md",
+   "title": "input-player.ts",
+   "size": 534
+  },
+  {
+   "path": "tools/nostalgist-mod/src/types/retroarch-config/input.ts.md",
+   "title": "input.ts",
+   "size": 533
+  },
+  {
+   "path": "tools/nostalgist-mod/src/types/retroarch-config/notification.ts.md",
+   "title": "notification.ts",
+   "size": 503
+  },
+  {
+   "path": "tools/nostalgist-mod/src/types/retroarch-config/quick-menu.ts.md",
+   "title": "quick-menu.ts",
+   "size": 493
+  },
+  {
+   "path": "tools/nostalgist-mod/src/types/retroarch-config/rewind.ts.md",
+   "title": "rewind.ts",
+   "size": 459
+  },
+  {
+   "path": "tools/nostalgist-mod/src/types/retroarch-config/run-ahead.ts.md",
+   "title": "run-ahead.ts",
+   "size": 480
+  },
+  {
+   "path": "tools/nostalgist-mod/src/types/retroarch-config/save.ts.md",
+   "title": "save.ts",
+   "size": 487
+  },
+  {
+   "path": "tools/nostalgist-mod/src/types/retroarch-config/skeleton.ts.md",
+   "title": "skeleton.ts",
+   "size": 555
+  },
+  {
+   "path": "tools/nostalgist-mod/src/types/retroarch-config/theme.ts.md",
+   "title": "theme.ts",
+   "size": 460
+  },
+  {
+   "path": "tools/nostalgist-mod/src/types/retroarch-config/video.ts.md",
+   "title": "video.ts",
+   "size": 504
+  },
+  {
+   "path": "tools/nostalgist-mod/src/types/retroarch-emscripten.ts.md",
+   "title": "retroarch-emscripten.ts",
+   "size": 648
+  }
+ ]
+}
