@@ -1,0 +1,300 @@
+{
+  "version": 1,
+  "files": [
+    {
+      "systemId": "atari2600",
+      "path": "roms/atari2600/asteroids.a26",
+      "kind": "rom"
+    },
+    {
+      "systemId": "atari2600",
+      "path": "roms/atari2600/berzerk.a26",
+      "kind": "rom"
+    },
+    {
+      "systemId": "atari2600",
+      "path": "roms/atari2600/donkeykong.a26",
+      "kind": "rom"
+    },
+    {
+      "systemId": "atari2600",
+      "path": "roms/atari2600/donkeykongjunior.a26",
+      "kind": "rom"
+    },
+    {
+      "systemId": "atari2600",
+      "path": "roms/atari2600/pacman.a26",
+      "kind": "rom"
+    },
+    {
+      "systemId": "nes",
+      "path": "roms/nes/drmario.nes",
+      "kind": "rom"
+    },
+    {
+      "systemId": "gb",
+      "path": "roms/gb/pokemonblueversion.gb",
+      "kind": "rom"
+    },
+    {
+      "systemId": "gb",
+      "path": "roms/gb/pokemonredversion.gb",
+      "kind": "rom"
+    },
+    {
+      "systemId": "gb",
+      "path": "roms/gb/tetris2usaeuroperev1sgbenhanced.gb",
+      "kind": "rom"
+    },
+    {
+      "systemId": "gb",
+      "path": "roms/gb/tetrisworldrev1.gb",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/alien3.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/alienvspredator.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/bugsbunnyrabbitrampage.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/cacomaknightinbizyland.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/chronotrigger.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/donkeykongcountry.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/donkeykongcountry2diddyskongquest.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/donkeykongcountry3dixiekongsdoubletrouble.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/earthbound.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/frogger.smc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/fzero.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/harvestmoon.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/inspectorgadget.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/killerinstinct.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/kirbysavalanche.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/kirbysdreamcourse.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/kirbysdreamland3.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/kirbysuperstar.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/legendofzeldaalinktopast.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/megaman7.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/megamansoccer.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/megamanx.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/megamanx2.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/megamanx3.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/mortalkombat.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/mortalkombatii.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/plok.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/supermarioallstars.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/supermariokart.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/supermariorpglegendofsevenstars.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/supermarioworld.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/supermarioworld2yoshisisland.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/tetris2.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/tetrisdrmario.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/wwfraw.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/wwfroyalrumble.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "snes",
+      "path": "roms/snes/wwfwrestlemaniaarcadegame.sfc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "n64",
+      "path": "roms/n64/drmario64.z64",
+      "kind": "rom"
+    },
+    {
+      "systemId": "n64",
+      "path": "roms/n64/harvestmoon64.z64",
+      "kind": "rom"
+    },
+    {
+      "systemId": "gbc",
+      "path": "roms/gbc/harvestmoon2gbc.gbc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "gbc",
+      "path": "roms/gbc/harvestmoon3gbc.gbc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "gbc",
+      "path": "roms/gbc/harvestmoongbc.gbc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "gbc",
+      "path": "roms/gbc/legendofzeldalinksawakeningdx.gbc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "gbc",
+      "path": "roms/gbc/legendofzeldaoracleofages.gbc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "gbc",
+      "path": "roms/gbc/legendofzeldaoracleofseasons.gbc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "gbc",
+      "path": "roms/gbc/pokemoncrystalversion.gbc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "gbc",
+      "path": "roms/gbc/pokemongoldversion.gbc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "gbc",
+      "path": "roms/gbc/pokemonsilverversion.gbc",
+      "kind": "rom"
+    },
+    {
+      "systemId": "gbc",
+      "path": "roms/gbc/pokemonyellowversionspecialpikachuedition.gb",
+      "kind": "rom"
+    }
+  ]
+}
